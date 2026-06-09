@@ -109,6 +109,23 @@ const items = {
 
 const challengeState = {};
 
+function isChallengeUnlocked(challenge){
+
+    if(challenge.unlock === "arrival"){
+        return true;
+    }
+
+    if(challenge.unlock?.type === "success"){
+
+        return challengeState[
+            challenge.unlock.challenge
+        ]?.completed;
+
+    }
+
+    return false;
+}
+
 const storage = {
     desk: [],
     shoebox: []
@@ -121,19 +138,19 @@ const storage = {
 const rooms = {
 shop:{
     name:"Shop",
-    description:"The Stitcher's workshop. <br>You're on some sort of metal table. It's cold, so you jump down and stand in the middle of the room.<br>Your stomach rumbles, and you wonder where to go next.",
+    description:"The Stitcher's workshop. Something smells... fishy?",
     exits:["hall","yard"],
     locations:{
         desk:{
-    name:"Stitcher's Desk",
-    description:"Covered in tools and scraps. Some of them look like they might have been used recently.",
+        name:"Stitcher's Desk",
+        description:"Covered in tools and scraps. Some of them look like they might have been used recently.",
     actions:[
         { id:"leaveGift", label:"Leave a gift" }
     ]
 },
         shoebox:{
             name:"Shoebox",
-            description:"A seemingly forgotted shoebox. It's devoid of shoes, maybe you could store important things here.",
+            description:"A seemingly forgotten shoebox. It's devoid of shoes, maybe you could store important things here.",
             actions:[
                 { id:"storeItem", label:"Store items" }
             ]
@@ -143,7 +160,7 @@ shop:{
 
 yard:{
     name:"Yard",
-    description:"An overgrown yard outside. <br> Walking around on new legs, you get a good look at the place. <br> This is a big house! The front door goes to the hall. <br>The yard is empty, save for some random debris here and there. It is surrounded by a worn white fence, and there is a road going into the wood in front, and a small footpath going to the back.<br>There are also doors to the kitchen and shop.",
+    description:"An overgrown yard outside. Walking around on new legs, you get a good look at the place. This is a big house! The front door goes to the hall. The yard is mostly empty with some litter scattered around. It is surrounded by a worn white fence, and there is a road going into the wood in front, and a small footpath going to the back. There are also doors to the kitchen and shop.",
     exits:["shop","hall","kitchen"],
     searchable:true,
     loot:["materials"]
@@ -151,19 +168,25 @@ yard:{
 
 hall:{
     name:"Hall",
-    description:"This is a biiig room. A tall chandelier hangs high, but produces no light. <br>Standing in the center, the front door is behind you. To your left seems to be the shop, and further away are some stairs.<br>On your left, a quiet room, and farther down, the smell of fresh bread coming from the kitchen.",
+    description:"This is a biiig room. A tall chandelier hangs high, but produces no light. Standing in the center, the front door is behind you. To your left seems to be the shop, and further away are some stairs.<br>On your left, a quiet room, and farther down, the smell of fresh bread coming from the kitchen.",
     exits:["shop","yard","stairs","kitchen","foyer"]
 },
 
 foyer:{
     name:"Foyer",
-    description:"A cozy room with a fireplace.<br>The shades are drawn shut, and the only light comes from the hall and a tiny fire that flickers in and out. Someone should stoke it. <br>There are two doors in this room.",
-    exits:["hall","dining"]
+    description:"A cozy room with a fireplace.<br>The shades are drawn shut, and the only light comes from the hall and a tiny fire that flickers in and out. Someone should stoke it. There are two doors in this room.",
+    exits:["hall","dining"],
+    locations:{
+        fireplace:{
+        name:"Fireplace",
+        description:"The coals radiate dry heat, you didn't know you were cold. A metal stand has tiny tools; a shovel, a wire broom, and a poker."
+        }
+    }
 },
 
 dining:{
     name:"Dining Room",
-    description:"The room is dark.<br>The only light is coming from the kichen. A table is set with six plates, but there is no food. You feel sad.<br>There are two doors in this room.",
+    description:"The room is dark.<br>The only light is coming from the kichen. A table is set with six plates, but there is no food. You feel sad. There are two doors in this room.",
     exits:["foyer","kitchen"],
     searchable:true,
     loot:["smallBone"]
@@ -171,7 +194,7 @@ dining:{
 
 kitchen:{
     name:"Kitchen",
-    description:"This room is aromatic. <br>The smell of fresh bread makes your stomach grumble. You've never had a stomach before, so you don't know what to do. <br>There are cabinets, a wash basin, and a wood burning stove. There is a perfectly tiny little table and chair in the back corner.<br>There are two doors in this room.",
+    description:"This room is aromatic. The smell of fresh bread makes your stomach grumble. You've never had a stomach before, so you don't know what to do. There are cabinets, a wash basin, and a wood burning stove. There is a perfectly tiny little table and chair in the back corner. There are three doors in this room.",
     exits:["hall","yard","dining"]
 },
 
@@ -189,13 +212,13 @@ cellar:{
 
 lobby:{
     name:"Landing",
-    description:"The upstairs landing.<br>You see stitcher's door. You don't know anything yet, but you know better than to touch it. <br> There is a glass door to a balcony overlooking the back yard. There are plush rugs and some paintings on the wall. You wonder what they depict, and then you wonder what wondering is. Maybe that's what it's all about.",
+    description:"The upstairs landing. You see stitcher's door. You don't know anything yet, but you do know better than to touch it. There is a glass door to a balcony overlooking the back yard. There are plush rugs and some paintings on the wall. You wonder what they depict, and then you wonder what wondering is. Maybe that's what it's all about.",
     exits:["stairs","balcony"]
 },
 
 balcony:{
     name:"Balcony",
-    description:"A small balcony overlooking the yard...",
+    description:"A small balcony overlooking the yard... The fresh air feels good on your new lungs. The railing is pretty far apart, you wonder if you could squeeze onto the roof for a better view.",
     exits:["lobby"],
     challenges:{
         roofJump:{
@@ -212,7 +235,7 @@ balcony:{
 
 roof:{
     name:"Roof",
-    description:"You balance atop the roof.<br>",
+    description:"The wind makes wistling sounds in the eaves. You can see that Stitcher left a window slightly ajar.",
     exits:["balcony"]
 },
 
@@ -445,6 +468,10 @@ function render(){
     actions.appendChild(searchBtn);
     
     Object.entries(room.challenges || {}).forEach(([id, challenge])=>{
+
+    if(!isChallengeUnlocked(challenge)){
+        return;
+    }
 
     const btn=document.createElement("button");
 
