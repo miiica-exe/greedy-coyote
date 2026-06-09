@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Homunculus Explorer</title>
+<title>Greedy Coyote</title>
 
 <style>
 body{
@@ -45,7 +45,7 @@ h1,h2,h3{
 
 <body>
 
-<h1>Homunculus Explorer</h1>
+<h1>Greedy Coyote</h1>
 
 <div class="panel" id="characterPanel"></div>
 <div class="panel" id="inventoryPanel"></div>
@@ -107,7 +107,7 @@ const items = {
 // STATE
 //==================================================
 
-const checkState = {};
+const challengeState = {};
 
 const storage = {
     desk: [],
@@ -121,19 +121,19 @@ const storage = {
 const rooms = {
 shop:{
     name:"Shop",
-    description:"The Stitcher's workshop.",
+    description:"The Stitcher's workshop. <br>You're on some sort of metal table. It's cold, so you jump down and stand in the middle of the room.<br>Your stomach rumbles, and you wonder where to go next.",
     exits:["hall","yard"],
     locations:{
         desk:{
     name:"Stitcher's Desk",
-    description:"Covered in tools and scraps.",
+    description:"Covered in tools and scraps. Some of them look like they might have been used recently.",
     actions:[
         { id:"leaveGift", label:"Leave a gift" }
     ]
 },
         shoebox:{
             name:"Shoebox",
-            description:"Your personal storage.",
+            description:"A seemingly forgotted shoebox. It's devoid of shoes, maybe you could store important things here.",
             actions:[
                 { id:"storeItem", label:"Store items" }
             ]
@@ -143,7 +143,7 @@ shop:{
 
 yard:{
     name:"Yard",
-    description:"An overgrown yard outside.",
+    description:"An overgrown yard outside. <br> Walking around on new legs, you get a good look at the place. <br> This is a big house! The front door goes to the hall. <br>The yard is empty, save for some random debris here and there. It is surrounded by a worn white fence, and there is a road going into the wood in front, and a small footpath going to the back.<br>There are also doors to the kitchen and shop.",
     exits:["shop","hall","kitchen"],
     searchable:true,
     loot:["materials"]
@@ -151,19 +151,19 @@ yard:{
 
 hall:{
     name:"Hall",
-    description:"You stand in a great hall. Wooden floors creak underfoot.",
+    description:"This is a biiig room. A tall chandelier hangs high, but produces no light. <br>Standing in the center, the front door is behind you. To your left seems to be the shop, and further away are some stairs.<br>On your left, a quiet room, and farther down, the smell of fresh bread coming from the kitchen.",
     exits:["shop","yard","stairs","kitchen","foyer"]
 },
 
 foyer:{
     name:"Foyer",
-    description:"A cozy room with a fireplace.",
+    description:"A cozy room with a fireplace.<br>The shades are drawn shut, and the only light comes from the hall and a tiny fire that flickers in and out. Someone should stoke it. <br>There are two doors in this room.",
     exits:["hall","dining"]
 },
 
 dining:{
     name:"Dining Room",
-    description:"The room is dark.",
+    description:"The room is dark.<br>The only light is coming from the kichen. A table is set with six plates, but there is no food. You feel sad.<br>There are two doors in this room.",
     exits:["foyer","kitchen"],
     searchable:true,
     loot:["smallBone"]
@@ -171,7 +171,7 @@ dining:{
 
 kitchen:{
     name:"Kitchen",
-    description:"There is a tiny chair and table here.",
+    description:"This room is aromatic. <br>The smell of fresh bread makes your stomach grumble. You've never had a stomach before, so you don't know what to do. <br>There are cabinets, a wash basin, and a wood burning stove. There is a perfectly tiny little table and chair in the back corner.<br>There are two doors in this room.",
     exits:["hall","yard","dining"]
 },
 
@@ -183,25 +183,36 @@ stairs:{
 
 cellar:{
     name:"Cellar",
-    description:"It is too dark to see anything.",
+    description:"It is seriously too dark to see anything.",
     exits:["stairs"]
 },
 
 lobby:{
     name:"Landing",
-    description:"The upstairs landing.",
+    description:"The upstairs landing.<br>You see stitcher's door. You don't know anything yet, but you know better than to touch it. <br> There is a glass door to a balcony overlooking the back yard. There are plush rugs and some paintings on the wall. You wonder what they depict, and then you wonder what wondering is. Maybe that's what it's all about.",
     exits:["stairs","balcony"]
 },
 
 balcony:{
     name:"Balcony",
-    description:"A small balcony overlooking the yard.",
-    exits:["lobby"]
+    description:"A small balcony overlooking the yard...",
+    exits:["lobby"],
+    challenges:{
+        roofJump:{
+            label:"Climb to Roof",
+            type:"travel",
+            destination:"roof",
+            unlock:"arrival",
+            repeatable:true,
+            skill:"pliage",
+            dc:4
+        }
+    }
 },
 
 roof:{
     name:"Roof",
-    description:"You balance atop the roof.",
+    description:"You balance atop the roof.<br>",
     exits:["balcony"]
 },
 
@@ -338,7 +349,43 @@ function doLocationAction(actionId){
         return;
     }
 }
+//==========DICE====================================
+function rollChallenge(challengeId){
 
+    const room = rooms[currentLocation];
+    const challenge = room.challenges[challengeId];
+
+    let roll = Math.floor(Math.random() * 6) + 1;
+
+    if(challenge.skill){
+        roll += player.stats[challenge.skill] || 0;
+    }
+
+    if(roll >= challenge.dc){
+
+        log(
+            `Success! (${roll}/${challenge.dc})`,
+            "success"
+        );
+
+        if(!challenge.repeatable){
+            challengeState[challengeId] = {
+                completed:true
+            };
+        }
+
+        if(challenge.type === "travel"){
+            moveTo(challenge.destination);
+        }
+
+    } else {
+
+        log(
+            `Failure! (${roll}/${challenge.dc})`,
+            "fail"
+        );
+    }
+}
 //==================================================
 
 function render(){
@@ -358,7 +405,7 @@ function render(){
     document.getElementById("locationDescription").textContent = displayDescription;
 
     //==================================================
-    // ROOM BUTTONS (UNCHANGED FUNCTIONALITY)
+    // ROOM BUTTONS 
     //==================================================
     const exits=document.getElementById("exitButtons");
     exits.innerHTML="";
@@ -371,7 +418,7 @@ function render(){
     });
 
     //==================================================
-    // LOCATION BUTTONS (FIXED)
+    // LOCATION BUTTONS
     //==================================================
     const locs=document.getElementById("locationButtons");
     locs.innerHTML="";
@@ -391,11 +438,24 @@ function render(){
     const actions=document.getElementById("actionButtons");
     actions.innerHTML="";
 
-    // GLOBAL SEARCH (always available)
+    //SEARCH 
     const searchBtn=document.createElement("button");
     searchBtn.textContent="Search";
     searchBtn.onclick=searchContext;
     actions.appendChild(searchBtn);
+    
+    Object.entries(room.challenges || {}).forEach(([id, challenge])=>{
+
+    const btn=document.createElement("button");
+
+    btn.textContent =
+        `${challenge.label} {${challenge.skill} DC${challenge.dc}}`;
+
+    btn.onclick = ()=>rollChallenge(id);
+
+    actions.appendChild(btn);
+
+});
 
     if(currentSubLocation){
         const loc = room.locations[currentSubLocation];
@@ -413,6 +473,7 @@ function render(){
         actions.appendChild(back);
     }
 }
+
 
     //==================================================
     // SHOEBOX
