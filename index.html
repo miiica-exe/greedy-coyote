@@ -104,35 +104,39 @@ const items = {
 };
 
 //==================================================
-// CHECK STATE
+// STATE
 //==================================================
 
 const checkState = {};
+
+const storage = {
+    desk: [],
+    shoebox: []
+};
 
 //==================================================
 // ROOMS
 //==================================================
 
 const rooms = {
-
 shop:{
     name:"Shop",
     description:"The Stitcher's workshop.",
     exits:["hall","yard"],
     locations:{
         desk:{
-            name:"Stitcher's Desk",
-            description:"Covered in tools and scraps.",
-            actions:[
-  { id:"searchDesk", label:"Search the desk" }
-]
-        },
+    name:"Stitcher's Desk",
+    description:"Covered in tools and scraps.",
+    actions:[
+        { id:"leaveGift", label:"Leave a gift" }
+    ]
+},
         shoebox:{
             name:"Shoebox",
             description:"Your personal storage.",
             actions:[
-  { id:"storeItem", label:"Store items" }
-]
+                { id:"storeItem", label:"Store items" }
+            ]
         }
     }
 },
@@ -192,35 +196,13 @@ lobby:{
 balcony:{
     name:"Balcony",
     description:"A small balcony overlooking the yard.",
-    exits:["lobby"],
-    specialExits:[
-        {
-            id:"balconyRoof",
-            label:"Roof",
-            target:"roof",
-            check:{ stat:"pliage", dc:4, repeatable:true }
-        }
-    ]
+    exits:["lobby"]
 },
 
 roof:{
     name:"Roof",
     description:"You balance atop the roof.",
-    exits:["balcony"],
-    specialExits:[
-        {
-            id:"roofWindow",
-            label:"Window",
-            target:"stitcherRoom",
-            check:{ stat:"heft", dc:6, repeatable:false }
-        },
-        {
-            id:"roofWindowPliage",
-            label:"Squeeze through gap",
-            target:"stitcherRoom",
-            check:{ stat:"pliage", dc:6, repeatable:true }
-        }
-    ]
+    exits:["balcony"]
 },
 
 stitcherRoom:{
@@ -228,7 +210,6 @@ stitcherRoom:{
     description:"This location is locked.",
     exits:["roof"]
 }
-
 };
 
 //==================================================
@@ -283,6 +264,9 @@ function updateInventory(){
             html += `${items[i].name}<br>`;
         });
     }
+    if(document.querySelector("#takeSelected")){
+    openShoebox();
+}
 
     document.getElementById("inventoryPanel").innerHTML=html;
 }
@@ -306,7 +290,6 @@ function updateCharacter(){
 function moveTo(roomId){
     currentLocation=roomId;
     currentSubLocation=null;
-    resetChecks(roomId);
     render();
 }
 
@@ -319,74 +302,39 @@ function enterLocation(locationId){
 
 //==================================================
 
-function resetChecks(roomId){
-    Object.keys(checkState).forEach(key=>{
-        if(checkState[key].failed){
-            delete checkState[key];
-        }
-    });
-}
-
-//==================================================
-
-function doCheck(exit){
-    const stat=exit.check.stat;
-    const dc=exit.check.dc;
-
-    const roll=Math.floor(Math.random()*6)+1;
-    const total=roll+player.stats[stat];
-
-    log(`Roll ${roll} + ${player.stats[stat]} ${stat} = ${total} (DC ${dc})`);
-
-    if(total>=dc){
-        log("Success!", "success");
-
-        if(!exit.check.repeatable){
-            checkState[exit.id]={ unlocked:true };
-        }
-
-        moveTo(exit.target);
-
-    } else {
-        log("Failed. Try again later.", "fail");
-        checkState[exit.id]={ failed:true };
-        render();
-    }
-}
-
-//==================================================
-
-function searchRoom(){
-    const room=rooms[currentLocation];
-
-    if(!room.loot || room.loot.length===0){
-        log("You search around but find nothing.");
-        return;
-    }
+function searchContext(){
+    const room = rooms[currentLocation];
 
     if(room.looted){
-        log("You've already found everything here.");
+        log("You've already searched here.");
         return;
     }
 
-    const itemId=room.loot[0];
+    if(room.loot && room.loot.length > 0){
+        const itemId = room.loot[0];
 
-    if(confirm(`You found ${items[itemId].name}. Take it?`)){
-        addItem(itemId);
-        room.looted=true;
+        if(confirm(`You found ${items[itemId].name}. Take it?`)){
+            addItem(itemId);
+            room.looted = true;
+        }
+    } else {
+        log("You search around but find nothing.");
     }
 }
 
 //==================================================
 
 function doLocationAction(actionId){
-    if(actionId === "searchDesk"){
-        log("You rummage through the desk.");
+    if(actionId === "leaveGift"){
+        storage.desk.push(...player.inventory);
+        player.inventory = [];
+        updateInventory();
+        log("You leave everything at the desk.", "success");
         return;
     }
 
     if(actionId === "storeItem"){
-        log("You organize your storage.");
+        openShoebox();
         return;
     }
 }
@@ -409,7 +357,9 @@ function render(){
     document.getElementById("locationName").textContent = displayName;
     document.getElementById("locationDescription").textContent = displayDescription;
 
-    // exits
+    //==================================================
+    // ROOM BUTTONS (UNCHANGED FUNCTIONALITY)
+    //==================================================
     const exits=document.getElementById("exitButtons");
     exits.innerHTML="";
 
@@ -420,68 +370,165 @@ function render(){
         exits.appendChild(btn);
     });
 
-    // locations
+    //==================================================
+    // LOCATION BUTTONS (FIXED)
+    //==================================================
     const locs=document.getElementById("locationButtons");
     locs.innerHTML="";
 
-    Object.entries(room.locations || {}).forEach(([id, loc])=>{
-        const btn=document.createElement("button");
-        btn.textContent = name;
-        btn.onclick = () => enterLocation(id);
-        locs.appendChild(btn);
-    });
+    if(!currentSubLocation){
+        Object.entries(room.locations || {}).forEach(([id, loc])=>{
+            const btn=document.createElement("button");
+            btn.textContent = loc.name;   // FIXED BUG HERE
+            btn.onclick = () => enterLocation(id);
+            locs.appendChild(btn);
+        });
+    }
 
-    // actions
+    //==================================================
+    // ACTION BUTTONS
+    //==================================================
     const actions=document.getElementById("actionButtons");
     actions.innerHTML="";
 
+    // GLOBAL SEARCH (always available)
+    const searchBtn=document.createElement("button");
+    searchBtn.textContent="Search";
+    searchBtn.onclick=searchContext;
+    actions.appendChild(searchBtn);
+
     if(currentSubLocation){
-        const room = rooms[currentLocation];
         const loc = room.locations[currentSubLocation];
 
         (loc.actions || []).forEach(action=>{
-    const btn = document.createElement("button");
-    btn.textContent = action.label;
-    btn.onclick = () => doLocationAction(action.id);
-    actions.appendChild(btn);
-});
-    }
-
-    if(currentSubLocation){
-        const btn=document.createElement("button");
-        btn.textContent="Back";
-        btn.onclick=()=>{ currentSubLocation=null; render(); };
-        actions.appendChild(btn);
-    }
-
-    // special exits
-    (room.specialExits || []).forEach(exit=>{
-        const state=checkState[exit.id];
-
-        if(state?.unlocked && !exit.check.repeatable){
             const btn=document.createElement("button");
-            btn.textContent=`Go: ${exit.label}`;
-            btn.onclick=()=>moveTo(exit.target);
+            btn.textContent = action.label;
+            btn.onclick = () => doLocationAction(action.id);
             actions.appendChild(btn);
-            return;
-        }
+        });
 
-        if(state?.failed){
-            const span=document.createElement("div");
-            span.textContent=`Try again later: ${exit.label}`;
-            actions.appendChild(span);
-            return;
-        }
+        const back=document.createElement("button");
+        back.textContent="Back";
+        back.onclick=()=>{ currentSubLocation=null; render(); };
+        actions.appendChild(back);
+    }
+}
 
-        const btn=document.createElement("button");
-        btn.textContent=`Roll (${exit.check.stat} DC${exit.check.dc}) → ${exit.label}`;
-        btn.onclick=()=>doCheck(exit);
-        actions.appendChild(btn);
+    //==================================================
+    // SHOEBOX
+    //==================================================
+
+function openShoebox(){
+    const box = storage.shoebox;
+
+    let html = "<h2>Shoebox Storage</h2>";
+
+    html += "<h3>Take Items</h3>";
+
+    if(box.length === 0){
+        html += "(empty)<br><br>";
+    } else {
+        box.forEach((itemId, index)=>{
+            html += `
+                <label>
+                    <input type="checkbox" data-type="take" data-index="${index}">
+                    ${items[itemId].name}
+                </label><br>
+            `;
+        });
+    }
+
+    html += `<br><button id="takeSelected">Take Selected</button>`;
+
+//========================================================
+
+    html += "<hr><h3>Deposit Items</h3>";
+
+    if(player.inventory.length === 0){
+        html += "(nothing to deposit)<br><br>";
+    } else {
+        player.inventory.forEach((itemId, index)=>{
+            html += `
+                <label>
+                    <input type="checkbox" data-type="deposit" data-index="${index}">
+                    ${items[itemId].name}
+                </label><br>
+            `;
+        });
+    }
+
+    html += `<br><button id="depositSelected">Deposit Selected</button>`;
+    html += `<button id="closeBox">Close</button>`;
+
+    document.getElementById("inventoryPanel").innerHTML = html;
+
+    document.getElementById("takeSelected").onclick = takeFromShoebox;
+    document.getElementById("depositSelected").onclick = depositToShoebox;
+    document.getElementById("closeBox").onclick = () => {
+        updateInventory();
+    };
+}
+//==================================================
+function depositToShoebox(){
+    const checkboxes = document.querySelectorAll("#inventoryPanel input[data-type='deposit']");
+
+    const toMove = [];
+
+    checkboxes.forEach(cb=>{
+        if(cb.checked){
+            toMove.push(parseInt(cb.dataset.index));
+        }
     });
+
+    // sort descending so removal doesn't break indexes
+    toMove.sort((a,b)=>b-a);
+
+    for(const i of toMove){
+        const itemId = player.inventory[i];
+
+        storage.shoebox.push(itemId);
+        player.inventory.splice(i, 1);
+
+        log(`Stored ${items[itemId].name}.`, "success");
+    }
+
+    updateInventory();
+    openShoebox();
+}
+//===========================================================
+
+function takeFromShoebox(){
+    const checkboxes = document.querySelectorAll("#inventoryPanel input[data-type='take']");
+
+    const toTake = [];
+
+    checkboxes.forEach(cb=>{
+        if(cb.checked){
+            toTake.push(parseInt(cb.dataset.index));
+        }
+    });
+
+    // sort descending so splice doesn't break indexes
+    toTake.sort((a,b)=>b-a);
+
+    for(const i of toTake){
+        const itemId = storage.shoebox[i];
+
+        const item = items[itemId];
+        if(inventoryWeight() + item.weight <= player.capacity){
+            player.inventory.push(itemId);
+            storage.shoebox.splice(i, 1);
+            log(`Took ${item.name}.`, "success");
+        } else {
+            log(`${item.name} is too heavy to take.`, "fail");
+        }
+    }
+
+    updateInventory();
+    openShoebox();
 }
 
 //==================================================
-
 updateCharacter();
 updateInventory();
 render();
