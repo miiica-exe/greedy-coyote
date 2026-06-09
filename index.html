@@ -123,12 +123,16 @@ shop:{
         desk:{
             name:"Stitcher's Desk",
             description:"Covered in tools and scraps.",
-            actions:["searchDesk"]
+            actions:[
+  { id:"searchDesk", label:"Search the desk" }
+]
         },
         shoebox:{
             name:"Shoebox",
             description:"Your personal storage.",
-            actions:["storeItem"]
+            actions:[
+  { id:"storeItem", label:"Store items" }
+]
         }
     }
 },
@@ -422,7 +426,7 @@ function render(){
 
     Object.entries(room.locations || {}).forEach(([id, loc])=>{
         const btn=document.createElement("button");
-        btn.textContent = loc.name;
+        btn.textContent = name;
         btn.onclick = () => enterLocation(id);
         locs.appendChild(btn);
     });
@@ -435,12 +439,12 @@ function render(){
         const room = rooms[currentLocation];
         const loc = room.locations[currentSubLocation];
 
-        (loc.actions || []).forEach(actionId=>{
-            const btn=document.createElement("button");
-            btn.textContent=actionId;
-            btn.onclick=()=>doLocationAction(actionId);
-            actions.appendChild(btn);
-        });
+        (loc.actions || []).forEach(action=>{
+    const btn = document.createElement("button");
+    btn.textContent = action.label;
+    btn.onclick = () => doLocationAction(action.id);
+    actions.appendChild(btn);
+});
     }
 
     if(currentSubLocation){
