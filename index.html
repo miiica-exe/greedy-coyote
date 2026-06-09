@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Homunculus Explorer</title>
+
+<style>
+body{
+    background:#222;
+    color:#eee;
+    font-family:Verdana,sans-serif;
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+.panel{
+    border:1px solid #666;
+    padding:10px;
+    margin-bottom:10px;
+    background:#2f2f2f;
+}
+
+button{
+    margin:3px;
+    padding:6px 10px;
+    cursor:pointer;
+}
+
+h1,h2,h3{
+    margin-top:0;
+}
+
+#log{
+    height:220px;
+    overflow-y:auto;
+    background:#111;
+    padding:10px;
+}
+
+.success{ color:lightgreen; }
+.fail{ color:#ff8888; }
+</style>
+</head>
+
+<body>
+
+<h1>Homunculus Explorer</h1>
+
+<div class="panel" id="characterPanel"></div>
+<div class="panel" id="inventoryPanel"></div>
+
+<div class="panel">
+    <h2 id="locationName"></h2>
+    <p id="locationDescription"></p>
+
+    <div>
+        <h3>Exits</h3>
+        <div id="exitButtons"></div>
+    </div>
+
+    <div>
+        <h3>Places In This Room</h3>
+        <div id="locationButtons"></div>
+    </div>
+
+    <div>
+        <h3>Actions</h3>
+        <div id="actionButtons"></div>
+    </div>
+</div>
+
+<div class="panel">
+    <h2>Log</h2>
+    <div id="log"></div>
+</div>
+
+<script>
+
+//==================================================
+// CHARACTER
+//==================================================
+
+const player = {
+    name: "Coyote",
+    stats: {
+        pliage: 2,
+        tether: -1,
+        heft: -2,
+        acumen: 1
+    },
+    inventory: [],
+    capacity: 10
+};
+
+//==================================================
+// ITEMS
+//==================================================
+
+const items = {
+    smallBone: { name: "Small Bone", weight: 1 },
+    bigBone: { name: "Big Bone", weight: 3 },
+    materials: { name: "Materials", weight: 2 }
+};
+
+//==================================================
+// CHECK STATE
+//==================================================
+
+const checkState = {};
+
+//==================================================
+// ROOMS
+//==================================================
+
+const rooms = {
+
+shop:{
+    name:"Shop",
+    description:"The Stitcher's workshop.",
+    exits:["hall","yard"],
+    locations:{
+        desk:{
+            name:"Stitcher's Desk",
+            description:"Covered in tools and scraps.",
+            actions:["searchDesk"]
+        },
+        shoebox:{
+            name:"Shoebox",
+            description:"Your personal storage.",
+            actions:["storeItem"]
+        }
+    }
+},
+
+yard:{
+    name:"Yard",
+    description:"An overgrown yard outside.",
+    exits:["shop","hall","kitchen"],
+    searchable:true,
+    loot:["materials"]
+},
+
+hall:{
+    name:"Hall",
+    description:"You stand in a great hall. Wooden floors creak underfoot.",
+    exits:["shop","yard","stairs","kitchen","foyer"]
+},
+
+foyer:{
+    name:"Foyer",
+    description:"A cozy room with a fireplace.",
+    exits:["hall","dining"]
+},
+
+dining:{
+    name:"Dining Room",
+    description:"The room is dark.",
+    exits:["foyer","kitchen"],
+    searchable:true,
+    loot:["smallBone"]
+},
+
+kitchen:{
+    name:"Kitchen",
+    description:"There is a tiny chair and table here.",
+    exits:["hall","yard","dining"]
+},
+
+stairs:{
+    name:"Stairs",
+    description:"Where would you like to go?",
+    exits:["hall","cellar","lobby"]
+},
+
+cellar:{
+    name:"Cellar",
+    description:"It is too dark to see anything.",
+    exits:["stairs"]
+},
+
+lobby:{
+    name:"Landing",
+    description:"The upstairs landing.",
+    exits:["stairs","balcony"]
+},
+
+balcony:{
+    name:"Balcony",
+    description:"A small balcony overlooking the yard.",
+    exits:["lobby"],
+    specialExits:[
+        {
+            id:"balconyRoof",
+            label:"Roof",
+            target:"roof",
+            check:{ stat:"pliage", dc:4, repeatable:true }
+        }
+    ]
+},
+
+roof:{
+    name:"Roof",
+    description:"You balance atop the roof.",
+    exits:["balcony"],
+    specialExits:[
+        {
+            id:"roofWindow",
+            label:"Window",
+            target:"stitcherRoom",
+            check:{ stat:"heft", dc:6, repeatable:false }
+        },
+        {
+            id:"roofWindowPliage",
+            label:"Squeeze through gap",
+            target:"stitcherRoom",
+            check:{ stat:"pliage", dc:6, repeatable:true }
+        }
+    ]
+},
+
+stitcherRoom:{
+    name:"Stitcher's Room",
+    description:"This location is locked.",
+    exits:["roof"]
+}
+
+};
+
+//==================================================
+
+let currentLocation = "shop";
+let currentSubLocation = null;
+
+//==================================================
+
+function log(message, css=""){
+    const div=document.createElement("div");
+    if(css) div.className=css;
+    div.innerHTML=message;
+    document.getElementById("log").prepend(div);
+}
+
+//==================================================
+
+function inventoryWeight(){
+    let total=0;
+    player.inventory.forEach(item=>{
+        total += items[item].weight;
+    });
+    return total;
+}
+
+//==================================================
+
+function addItem(itemId){
+    const item=items[itemId];
+
+    if(inventoryWeight()+item.weight > player.capacity){
+        log("Too heavy to carry.", "fail");
+        return;
+    }
+
+    player.inventory.push(itemId);
+    updateInventory();
+    log(`Added ${item.name}.`, "success");
+}
+
+//==================================================
+
+function updateInventory(){
+    let html="<h2>Inventory</h2>";
+    html+=`Weight: ${inventoryWeight()} / ${player.capacity}<br><br>`;
+
+    if(player.inventory.length===0){
+        html+="(empty)";
+    } else {
+        player.inventory.forEach(i=>{
+            html += `${items[i].name}<br>`;
+        });
+    }
+
+    document.getElementById("inventoryPanel").innerHTML=html;
+}
+
+//==================================================
+
+function updateCharacter(){
+    const s=player.stats;
+
+    document.getElementById("characterPanel").innerHTML=`
+        <h2>${player.name}</h2>
+        Pliage: ${s.pliage}<br>
+        Tether: ${s.tether}<br>
+        Heft: ${s.heft}<br>
+        Acumen: ${s.acumen}
+    `;
+}
+
+//==================================================
+
+function moveTo(roomId){
+    currentLocation=roomId;
+    currentSubLocation=null;
+    resetChecks(roomId);
+    render();
+}
+
+//==================================================
+
+function enterLocation(locationId){
+    currentSubLocation=locationId;
+    render();
+}
+
+//==================================================
+
+function resetChecks(roomId){
+    Object.keys(checkState).forEach(key=>{
+        if(checkState[key].failed){
+            delete checkState[key];
+        }
+    });
+}
+
+//==================================================
+
+function doCheck(exit){
+    const stat=exit.check.stat;
+    const dc=exit.check.dc;
+
+    const roll=Math.floor(Math.random()*6)+1;
+    const total=roll+player.stats[stat];
+
+    log(`Roll ${roll} + ${player.stats[stat]} ${stat} = ${total} (DC ${dc})`);
+
+    if(total>=dc){
+        log("Success!", "success");
+
+        if(!exit.check.repeatable){
+            checkState[exit.id]={ unlocked:true };
+        }
+
+        moveTo(exit.target);
+
+    } else {
+        log("Failed. Try again later.", "fail");
+        checkState[exit.id]={ failed:true };
+        render();
+    }
+}
+
+//==================================================
+
+function searchRoom(){
+    const room=rooms[currentLocation];
+
+    if(!room.loot || room.loot.length===0){
+        log("You search around but find nothing.");
+        return;
+    }
+
+    if(room.looted){
+        log("You've already found everything here.");
+        return;
+    }
+
+    const itemId=room.loot[0];
+
+    if(confirm(`You found ${items[itemId].name}. Take it?`)){
+        addItem(itemId);
+        room.looted=true;
+    }
+}
+
+//==================================================
+
+function doLocationAction(actionId){
+    if(actionId === "searchDesk"){
+        log("You rummage through the desk.");
+        return;
+    }
+
+    if(actionId === "storeItem"){
+        log("You organize your storage.");
+        return;
+    }
+}
+
+//==================================================
+
+function render(){
+
+    const room = rooms[currentLocation];
+
+    let displayName = room.name;
+    let displayDescription = room.description;
+
+    if(currentSubLocation){
+        const loc = room.locations[currentSubLocation];
+        displayName = loc.name;
+        displayDescription = loc.description;
+    }
+
+    document.getElementById("locationName").textContent = displayName;
+    document.getElementById("locationDescription").textContent = displayDescription;
+
+    // exits
+    const exits=document.getElementById("exitButtons");
+    exits.innerHTML="";
+
+    (room.exits || []).forEach(exit=>{
+        const btn=document.createElement("button");
+        btn.textContent=rooms[exit].name;
+        btn.onclick=()=>moveTo(exit);
+        exits.appendChild(btn);
+    });
+
+    // locations
+    const locs=document.getElementById("locationButtons");
+    locs.innerHTML="";
+
+    Object.entries(room.locations || {}).forEach(([id, loc])=>{
+        const btn=document.createElement("button");
+        btn.textContent = loc.name;
+        btn.onclick = () => enterLocation(id);
+        locs.appendChild(btn);
+    });
+
+    // actions
+    const actions=document.getElementById("actionButtons");
+    actions.innerHTML="";
+
+    if(currentSubLocation){
+        const room = rooms[currentLocation];
+        const loc = room.locations[currentSubLocation];
+
+        (loc.actions || []).forEach(actionId=>{
+            const btn=document.createElement("button");
+            btn.textContent=actionId;
+            btn.onclick=()=>doLocationAction(actionId);
+            actions.appendChild(btn);
+        });
+    }
+
+    if(currentSubLocation){
+        const btn=document.createElement("button");
+        btn.textContent="Back";
+        btn.onclick=()=>{ currentSubLocation=null; render(); };
+        actions.appendChild(btn);
+    }
+
+    // special exits
+    (room.specialExits || []).forEach(exit=>{
+        const state=checkState[exit.id];
+
+        if(state?.unlocked && !exit.check.repeatable){
+            const btn=document.createElement("button");
+            btn.textContent=`Go: ${exit.label}`;
+            btn.onclick=()=>moveTo(exit.target);
+            actions.appendChild(btn);
+            return;
+        }
+
+        if(state?.failed){
+            const span=document.createElement("div");
+            span.textContent=`Try again later: ${exit.label}`;
+            actions.appendChild(span);
+            return;
+        }
+
+        const btn=document.createElement("button");
+        btn.textContent=`Roll (${exit.check.stat} DC${exit.check.dc}) → ${exit.label}`;
+        btn.onclick=()=>doCheck(exit);
+        actions.appendChild(btn);
+    });
+}
+
+//==================================================
+
+updateCharacter();
+updateInventory();
+render();
+log("You awaken in the Shop.");
+
+</script>
+
+</body>
+</html>
