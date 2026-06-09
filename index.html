@@ -174,19 +174,24 @@ hall:{
 
 foyer:{
     name:"Foyer",
-    description:"A cozy room with a fireplace.<br>The shades are drawn shut, and the only light comes from the hall and a tiny fire that flickers in and out. Someone should stoke it. There are two doors in this room.",
+    description:"A cozy room with a fireplace. The shades are drawn shut, and the only light comes from the hall and a tiny fire that flickers in and out. Someone should stoke it. There are two doors in this room.",
     exits:["hall","dining"],
     locations:{
         fireplace:{
         name:"Fireplace",
         description:"The coals radiate dry heat, you didn't know you were cold. A metal stand has tiny tools; a shovel, a wire broom, and a poker."
+        },
+
+        rug:{
+        name:"Plush Rug",
+        description:"Wow! You didn't know that things could be so soft! You wish they made plush rugs that stay on your feet."
         }
     }
 },
 
 dining:{
     name:"Dining Room",
-    description:"The room is dark.<br>The only light is coming from the kichen. A table is set with six plates, but there is no food. You feel sad. There are two doors in this room.",
+    description:"The room is dark. The only light is coming from the kichen. A table is set with six plates, but there is no food. You feel sad. There are two doors in this room.",
     exits:["foyer","kitchen"],
     searchable:true,
     loot:["smallBone"]
