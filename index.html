@@ -384,22 +384,37 @@ function enterLocation(locationId){
 //==================================================
 
 function searchContext(){
-    const room = rooms[currentLocation];
-
-    if(room.looted){
+    let target;
+    if(currentSubLocation){
+        target =
+            rooms[currentLocation]
+            .locations[currentSubLocation];
+    } else {
+        target = rooms[currentLocation];
+    }
+    if(target.looted){
         log("You've already searched here.");
         return;
     }
+    if(target.loot && target.loot.length > 0){
 
-    if(room.loot && room.loot.length > 0){
-        const itemId = room.loot[0];
-
-        if(confirm(`You found ${items[itemId].name}. Take it?`)){
+        const itemId =
+            target.loot[
+                Math.floor(
+                    Math.random() *
+                    target.loot.length
+                )
+            ];
+        if(confirm(
+            `You found ${items[itemId].name}. Take it?`
+        )){
             addItem(itemId);
-            room.looted = true;
         }
+        target.looted = true;
     } else {
-        log("You search around but find nothing.");
+        log(
+            "You search around but find nothing."
+        );
     }
 }
 
