@@ -487,24 +487,22 @@ function rollChallenge(challengeId){
     }
 
     if(roll >= challenge.dc){
+    log(
+        `Success! (${roll}/${challenge.dc})`,
+        "success"
+    );
+    if(!challenge.repeatable){
+        challengeState[challengeId] = {
+            completed:true
+        };
+    }
 
-        log(
-            `Success! (${roll}/${challenge.dc})`,
-            "success"
-        );
-
-        if(!challenge.repeatable){
-            challengeState[challengeId] = {
-                completed:true
-            };
-        }
-
-        if(challenge.type === "travel"){
-            moveTo(challenge.destination);
-        }
-
+    if(challenge.type === "travel"){
+        moveTo(challenge.destination);
     } else {
-
+        render();
+    }
+} else {
         log(
             `Failure! (${roll}/${challenge.dc})`,
             "fail"
@@ -582,11 +580,15 @@ function render(){
     actions.appendChild(searchBtn);
     
     Object.entries(room.challenges || {}).forEach(([id, challenge])=>{
-
     if(!isChallengeUnlocked(challenge)){
         return;
     }
-
+    if(
+        !challenge.repeatable &&
+        challengeState[id]?.completed
+    ){
+        return;
+    }
     const btn=document.createElement("button");
 
     btn.textContent =
