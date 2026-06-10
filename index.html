@@ -121,19 +121,29 @@ const items = {
 const challengeState = {};
 
 function isChallengeUnlocked(challenge){
-
     if(challenge.unlock === "arrival"){
         return true;
     }
-
     if(challenge.unlock?.type === "success"){
-
         return challengeState[
             challenge.unlock.challenge
         ]?.completed;
-
     }
+    return false;
+}
 
+function isExitUnlocked(exit){
+    if(typeof exit === "string"){
+        return true;
+    }
+    if(!exit.unlock){
+        return true;
+    }
+    if(exit.unlock.type === "success"){
+        return challengeState[
+            exit.unlock.challenge
+        ]?.completed;
+    }
     return false;
 }
 
@@ -507,12 +517,24 @@ function render(){
     const exits=document.getElementById("exitButtons");
     exits.innerHTML="";
 
-    (room.exits || []).forEach(exit=>{
-        const btn=document.createElement("button");
-        btn.textContent=rooms[exit].name;
-        btn.onclick=()=>moveTo(exit);
-        exits.appendChild(btn);
-    });
+(room.exits || []).forEach(exit=>{
+    let destination;
+    if(typeof exit === "string"){
+        destination = exit;
+    } else {
+
+        if(!isExitUnlocked(exit)){
+            return;
+        }
+        destination = exit.destination;
+    }
+    const btn=document.createElement("button");
+    btn.textContent =
+        rooms[destination].name;
+    btn.onclick =
+        ()=>moveTo(destination);
+    exits.appendChild(btn);
+});
 
     //==================================================
     // LOCATION BUTTONS
