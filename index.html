@@ -98,9 +98,21 @@ const player = {
 //==================================================
 
 const items = {
-    smallBone: { name: "Small Bone", weight: 1 },
-    bigBone: { name: "Big Bone", weight: 3 },
-    materials: { name: "Materials", weight: 2 }
+    smallBone: {
+        name: "Small Bone",
+        weight: 1
+    },
+
+    bigBone: {
+        name: "Big Bone",
+        weight: 3
+    },
+
+    spoon: {
+        name: "spoon",
+        weight: 1,
+        special: true
+    }
 };
 
 //==================================================
@@ -224,7 +236,7 @@ dining:{
     description:"The room is dark. The only light is coming from the kichen. A table is set with six plates, but there is no food. You feel sad. There are two doors in this room.",
     exits:["foyer","kitchen"],
     searchable:true,
-    loot:["smallBone"]
+    loot:["spoon"]
 },
 
 kitchen:{
@@ -394,14 +406,25 @@ function searchContext(){
 //==================================================
 
 function doLocationAction(actionId){
-    if(actionId === "leaveGift"){
-        storage.desk.push(...player.inventory);
-        player.inventory = [];
-        updateInventory();
-        log("You leave everything at the desk.", "success");
-        return;
-    }
+if(actionId === "leaveGift"){
+    const kept = [];
+    player.inventory.forEach(itemId => {
+        const item = items[itemId];
+        if(item.special){
+            kept.push(itemId);
+        } else {
+            storage.desk.push(itemId);
+        }
+    });
 
+    player.inventory = kept;
+    updateInventory();
+    log(
+        "You leave your belongings at the desk.",
+        "success"
+    )
+    return;
+}
     if(actionId === "storeItem"){
         openShoebox();
         return;
