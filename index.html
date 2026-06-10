@@ -280,13 +280,13 @@ balcony:{
     exits:["lobby"],
     challenges:{
         roofJump:{
-            label:"Climb to Roof",
-            type:"travel",
-            destination:"roof",
-            unlock:"arrival",
-            repeatable:true,
-            skill:"pliage",
-            dc:4
+        label:"Climb to Roof",
+        type:"travel",
+        destination:"roof",
+        unlock:"arrival",
+        repeatable:true,
+        skill:"pliage",
+        dc:4
         }
     }
 },
@@ -294,7 +294,23 @@ balcony:{
 roof:{
     name:"Roof",
     description:"The wind makes wistling sounds in the eaves. You can see that Stitcher left a window slightly ajar.",
-    exits:["balcony"]
+    challenges:{
+        openWindow:{
+            label:"Open Window",
+            type:"none",
+            unlock:"arrival",
+            repeatable:false,
+            skill:"heft",
+            dc:1
+        }
+    },
+        
+    exits:["balcony", 
+           {destination:"stitcherRoom",
+            unlock:{
+            type:"success",
+            challenge:"openWindow"
+            }]
 },
 
 stitcherRoom:{
