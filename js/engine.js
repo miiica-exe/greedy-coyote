@@ -535,7 +535,10 @@ function renderChildren(){
             "parentButton"
         );
 
-    if(location.parent){
+    if(
+    location.parent &&
+    location.backButton !== false
+){
 
         parentButton.style.display =
             "inline-block";
