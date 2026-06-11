@@ -3,6 +3,7 @@
 //==================================================
 
 import { locations } from "./world.js";
+import { items } from "./items.js";
 
 //==================================================
 // GAME STATE
@@ -39,7 +40,55 @@ export const player = {
         legs:"coyoteLegs"
     }
 };
+// PLAYER INVENTORY================================
 
+function inventoryWeight(){
+
+    let total = 0;
+
+    player.inventory.forEach(itemId=>{
+
+        total +=
+            items[itemId]?.weight
+            || 0;
+    });
+
+    return total;
+}
+
+function addItem(itemId){
+
+    const item = items[itemId];
+
+    if(!item){
+        return false;
+    }
+
+    if(
+        inventoryWeight()
+        +
+        item.weight
+        >
+        player.capacity
+    ){
+
+        log(
+            `${item.name} is too heavy.`,
+            "fail"
+        );
+
+        return false;
+    }
+
+    player.inventory.push(itemId);
+
+    log(
+        `Added ${item.name}.`,
+        "success"
+    );
+
+    return true;
+}
 //==================================================
 // TEMP BODY PART DATA
 //==================================================
@@ -663,19 +712,235 @@ function renderLootboxes(){
 }
 
 //==================================================
-// PLACEHOLDER
+// PLACEHOLDER(lootbox types)
 //==================================================
 
 function openLootbox(id){
 
-    document
-        .getElementById(
-            "lootboxContent"
-        )
-        .innerHTML =
-        `<strong>${id}</strong><br>
-        Lootbox system coming next.`;
+    activeLootbox = id;
+
+    renderLootboxPanel();
 }
+let activeLootbox = null;
+
+function renderLootboxPanel(){
+
+    const panel =
+        document.getElementById(
+            "lootboxContent"
+        );
+
+    const location =
+        locations[
+            state.currentLocation
+        ];
+
+    const box =
+        location.lootboxes[
+            activeLootbox
+        ];
+
+    if(!box){
+
+        panel.innerHTML =
+            "Select a lootbox.";
+
+        return;
+    }
+
+    let html = `
+        <h4>${box.label}</h4>
+        <p>Type: ${box.type}</p>
+    `;
+
+    if(
+        box.type === "search"
+    ){
+
+        if(
+            box.inventory.length===0
+        ){
+
+            html += "(empty)";
+
+        }else{
+
+            box.inventory.forEach(
+                (itemId,index)=>{
+
+                html += `
+                    <button
+                        onclick="
+                            window.takeLoot(
+                                ${index}
+                            )
+                        ">
+                        Take
+                        ${items[itemId].name}
+                    </button>
+                    <br>
+                `;
+            });
+        }
+    }
+
+    if(
+        box.type === "safe"
+    ){
+
+        html +=
+            "<h4>Stored Items</h4>";
+
+        if(
+            box.inventory.length===0
+        ){
+
+            html += "(empty)";
+        }
+
+        box.inventory.forEach(
+            (itemId,index)=>{
+
+            html += `
+                <button
+                    onclick="
+                        window.takeLoot(
+                            ${index}
+                        )
+                    ">
+                    Withdraw
+                    ${items[itemId].name}
+                </button>
+                <br>
+            `;
+        });
+
+        html +=
+            "<hr><h4>Inventory</h4>";
+
+        player.inventory.forEach(
+            (itemId,index)=>{
+
+            html += `
+                <button
+                    onclick="
+                        window.depositLoot(
+                            ${index}
+                        )
+                    ">
+                    Deposit
+                    ${items[itemId].name}
+                </button>
+                <br>
+            `;
+        });
+    }
+
+    if(
+        box.type === "locked"
+    ){
+
+        html +=
+            "<h4>Inventory</h4>";
+
+        player.inventory.forEach(
+            (itemId,index)=>{
+
+            const item =
+                items[itemId];
+
+            if(
+                item.special
+            ){
+                return;
+            }
+
+            html += `
+                <button
+                    onclick="
+                        window.depositLoot(
+                            ${index}
+                        )
+                    ">
+                    Deposit
+                    ${item.name}
+                </button>
+                <br>
+            `;
+        });
+    }
+
+    panel.innerHTML = html;
+}
+
+window.takeLoot =
+function(index){
+
+    const location =
+        locations[
+            state.currentLocation
+        ];
+
+    const box =
+        location.lootboxes[
+            activeLootbox
+        ];
+
+    const itemId =
+        box.inventory[index];
+
+    if(
+        addItem(itemId)
+    ){
+
+        box.inventory.splice(
+            index,
+            1
+        );
+    }
+
+    renderLootboxPanel();
+
+    renderLootboxes();
+
+    renderInventory();
+};
+
+window.depositLoot =
+function(index){
+
+    const location =
+        locations[
+            state.currentLocation
+        ];
+
+    const box =
+        location.lootboxes[
+            activeLootbox
+        ];
+
+    const itemId =
+        player.inventory[index];
+
+    player.inventory.splice(
+        index,
+        1
+    );
+
+    box.inventory.push(
+        itemId
+    );
+
+    log(
+        `Stored ${items[itemId].name}.`,
+        "success"
+    );
+
+    renderLootboxPanel();
+
+    renderInventory();
+};
+
 
 //==================================================
 // INVENTORY
@@ -688,17 +953,34 @@ function renderInventory(){
             "inventoryPanel"
         );
 
+    let html = `
+        <div class="inventoryWeight">
+            Weight:
+            ${inventoryWeight()}
+            /
+            ${player.capacity}
+        </div>
+    `;
+
     if(
         player.inventory.length===0
     ){
-        panel.innerHTML =
-            "(empty)";
-        return;
+
+        html += "(empty)";
+
+    }else{
+
+        player.inventory.forEach(itemId=>{
+
+            html += `
+                <div class="inventoryItem">
+                    ${items[itemId].name}
+                </div>
+            `;
+        });
     }
 
-    panel.innerHTML =
-        player.inventory
-        .join("<br>");
+    panel.innerHTML = html;
 }
 
 //==================================================
