@@ -1,743 +1,175 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Greedy Coyote</title>
 
-<style>
-body{
-    background:#473B1E;
-    color:#F2CD95;
-    font-family:Agency FB,sans-serif;
-    max-width:900px;
-    margin:auto;
-    padding:20px;
-}
-
-.panel{
-    border: 1px solid #666;
-    padding:10px;
-    margin-bottom:10px;
-    background:#60592E;
-}
-
-button{
-    background: #949A64;
-    margin:3px;
-    padding:6px 10px;
-    cursor:pointer;
-}
-
-h1,h2,h3{
-    margin-top:0;
-}
-
-#log{
-    height:220px;
-    overflow-y:auto;
-    background:#111;
-    padding:10px;
-}
-
-.success{ color:lightgreen; }
-.fail{ color:#ff8888; }
-</style>
+<link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
 <h1>Greedy Coyote</h1>
 
-<div class="panel" id="characterPanel"></div>
+<!-- ========================================== -->
+<!-- CHARACTER -->
+<!-- ========================================== -->
 
-<div class="panel">
-    <h2 id="locationName"></h2>
-    <p id="locationDescription"></p>
-
-    <div>
-        <h3>Places In This Room</h3>
-        <div id="locationButtons"></div>
-    </div>
-
-    <div>
-        <h3>Actions</h3>
-        <div id="actionButtons"></div>
-    </div>
-    
-    <div>
-        <h3>Exits</h3>
-        <div id="exitButtons"></div>
-    </div>
+<div class="panel" id="characterPanel">
 </div>
 
+<!-- ========================================== -->
+<!-- WORLD -->
+<!-- ========================================== -->
+
 <div class="panel">
+
+    <h2 id="locationLabel">
+        Loading...
+    </h2>
+
+    <p id="locationDescription">
+    </p>
+
+    <div id="locationMeta"></div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- CHILD LOCATIONS -->
+<!-- ========================================== -->
+
+<div class="panel">
+
+    <h3>Locations</h3>
+
+    <div id="childLocationButtons">
+    </div>
+
+    <button id="parentButton" style="display:none;">
+        Back
+    </button>
+
+</div>
+
+<!-- ========================================== -->
+<!-- CONNECTIONS -->
+<!-- ========================================== -->
+
+<div class="panel">
+
+    <h3>Connections</h3>
+
+    <div id="connectionButtons">
+    </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- CHALLENGES -->
+<!-- ========================================== -->
+
+<div class="panel">
+
+    <h3>Challenges</h3>
+
+    <div id="challengeButtons">
+    </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- LOOTBOXES -->
+<!-- ========================================== -->
+
+<div class="panel">
+
+    <h3>Lootboxes</h3>
+
+    <div id="lootboxButtons">
+    </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- ACTIVE LOOTBOX -->
+<!-- ========================================== -->
+
+<div class="panel" id="lootboxPanel">
+
+    <h3>Container</h3>
+
+    <div id="lootboxContent">
+        Select a lootbox.
+    </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- INVENTORY -->
+<!-- ========================================== -->
+
+<div class="panel">
+
+    <h2>Inventory</h2>
+
+    <div id="inventoryPanel">
+    </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- GAME INFO -->
+<!-- ========================================== -->
+
+<div class="panel">
+
+    <h3>World State</h3>
+
+    <div id="worldStatePanel">
+
+        <div>
+            Chapter:
+            <span id="chapterDisplay">0</span>
+        </div>
+
+        <div>
+            Time:
+            <span id="timeDisplay">
+                Day
+            </span>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- LOG -->
+<!-- ========================================== -->
+
+<div class="panel">
+
     <h2>Log</h2>
-    <div id="log"></div>
+
+    <div id="log">
+    </div>
+
 </div>
-<div class="panel" id="inventoryPanel"></div>
-<script>
 
-//==================================================
-// CHARACTER
-//==================================================
+<!-- ========================================== -->
+<!-- MODULES -->
+<!-- ========================================== -->
 
-const player = {
-    name: "Coyote",
-    stats: {
-        pliage: 2,
-        tether: -1,
-        heft: -2,
-        acumen: 1
-    },
-    inventory: [],
-    capacity: 10
-};
+<script type="module">
 
-//==================================================
-// ITEMS
-//==================================================
+import {
+    initializeGame
+} from "./js/engine.js";
 
-const items = {
-    smallBone: {
-        name: "Small Bone",
-        weight: 1
-    },
-
-    bigBone: {
-        name: "Big Bone",
-        weight: 3
-    },
-
-    spoon: {
-        name: "spoon",
-        weight: 1,
-        special: true
-    }
-};
-
-//==================================================
-// STATE
-//==================================================
-
-const challengeState = {};
-
-function isChallengeUnlocked(challenge){
-    if(challenge.unlock === "arrival"){
-        return true;
-    }
-    if(challenge.unlock?.type === "success"){
-        return challengeState[
-            challenge.unlock.challenge
-        ]?.completed;
-    }
-    return false;
-}
-
-function isExitUnlocked(exit){
-    if(typeof exit === "string"){
-        return true;
-    }
-    if(!exit.unlock){
-        return true;
-    }
-    if(exit.unlock.type === "success"){
-        return challengeState[
-            exit.unlock.challenge
-        ]?.completed;
-    }
-    return false;
-}
-
-const storage = {
-    desk: [],
-    shoebox: []
-};
-
-//==================================================
-// ROOMS
-//==================================================
-
-const rooms = {
-shop:{
-    name:"Shop",
-    description:"The Stitcher's workshop. Something smells... fishy?",
-    exits:["hall","yard"],
-    locations:{
-        desk:{
-        name:"Stitcher's Desk",
-        description:"Covered in tools and scraps. Some of them look like they might have been used recently.",
-        actions:[
-        { id:"leaveGift", label:"Leave a gift" }
-    ]
-},
-        shoebox:{
-        name:"Shoebox",
-        description:"A seemingly forgotten shoebox. It's devoid of shoes, maybe you could store important things here.",
-        actions:[
-        { id:"storeItem", label:"Store items" }
-            ]
-        },
-
-        table:{
-        name:"Operating Table",
-        description:"This is where you were when you woke up."
-        },
-
-        bin:{
-        name:"Wastebin",
-        description:"Ew, how macabre.",
-        searchable: true,
-        loot:["bigBone"]
-        }
-    }
-},
-
-yard:{
-    name:"Yard",
-    description:"An overgrown yard outside. Walking around on new legs, you get a good look at the place. This is a big house! The front door goes to the hall. The yard is mostly empty with some litter scattered around. It is surrounded by a worn white fence, and there is a road going into the wood in front, and a small footpath going to the back. There are also doors to the kitchen and shop.",
-    exits:["shop","hall","kitchen"],
-    searchable:true,
-    loot:["smallBone"],
-    locations:{
-        fountain:{
-        name:"Overgrown Fountain",
-        description:"You can barely tell that there used to be a fountain here.",
-        searchable:true,
-        loot:["smallBone"]
-        },
-
-        garden:{
-        name:"Lost Garden",
-        description:"A daffodil peaks out shyly from the overgrowth.",
-        searchable:true,
-        loot:["smallBone","bigBone"]
-        },
-
-        clover:{
-        name:"Clover Patch",
-        description:"The air is oddly cool here."
-        }
-    }
-},
-
-hall:{
-    name:"Hall",
-    description:"This is a biiig room. A tall chandelier hangs high, but produces no light. Standing in the center, the front door is behind you. To your left seems to be the shop, and further away are some stairs.<br>On your left, a quiet room, and farther down, the smell of fresh bread coming from the kitchen.",
-    exits:["shop","yard","stairs","kitchen","foyer"]
-},
-
-foyer:{
-    name:"Foyer",
-    description:"A cozy room with a fireplace. The shades are drawn shut, and the only light comes from the hall and a tiny fire that flickers in and out. Someone should stoke it. There are two doors in this room.",
-    exits:["hall","dining"],
-    locations:{
-        fireplace:{
-        name:"Fireplace",
-        description:"The coals radiate dry heat, you didn't know you were cold. A metal stand has tiny tools; a shovel, a wire broom, and a poker."
-        },
-
-        rug:{
-        name:"Plush Rug",
-        description:"Wow! You didn't know that things could be so soft! You wish they made plush rugs that stay on your feet."
-        }
-    }
-},
-
-dining:{
-    name:"Dining Room",
-    description:"The room is dark. The only light is coming from the kichen. A table is set with six plates, but there is no food. You feel sad. There are two doors in this room.",
-    exits:["foyer","kitchen"],
-    searchable:true,
-    loot:["spoon"]
-},
-
-kitchen:{
-    name:"Kitchen",
-    description:"This room is aromatic. The smell of fresh bread makes your stomach grumble. You've never had a stomach before, so you don't know what to do. There are cabinets, a wash basin, and a wood burning stove. There is a perfectly tiny little table and chair in the back corner. There are three doors in this room.",
-    exits:["hall","yard","dining"]
-},
-
-stairs:{
-    name:"Stairs",
-    description:"Where would you like to go?",
-    exits:["hall","cellar","lobby"]
-},
-
-cellar:{
-    name:"Cellar",
-    description:"It is seriously too dark to see anything.",
-    exits:["stairs"]
-},
-
-lobby:{
-    name:"Landing",
-    description:"The upstairs landing. You see stitcher's door. You don't know anything yet, but you do know better than to touch it. There is a glass door to a balcony overlooking the back yard. There are plush rugs and some paintings on the wall. You wonder what they depict, and then you wonder what wondering is. Maybe that's what it's all about.",
-    exits:["stairs","balcony"]
-},
-
-balcony:{
-    name:"Balcony",
-    description:"A small balcony overlooking the yard... The fresh air feels good on your new lungs. The railing is pretty far apart, you wonder if you could squeeze onto the roof for a better view.",
-    exits:["lobby"],
-    challenges:{
-        roofJump:{
-        label:"Climb to Roof",
-        type:"travel",
-        destination:"roof",
-        unlock:"arrival",
-        repeatable:true,
-        skill:"pliage",
-        dc:4
-        }
-    }
-},
-
-roof:{
-    name:"Roof",
-    description:"The wind makes wistling sounds in the eaves. You can see that Stitcher left a window slightly ajar.",
-    challenges:{
-        openWindow:{
-            label:"Open Window",
-            type:"none",
-            unlock:"arrival",
-            repeatable:false,
-            skill:"heft",
-            dc:1
-        }
-    },
-        
-    exits:["balcony", 
-           {destination:"stitcherRoom",
-            unlock:{
-            type:"success",
-            challenge:"openWindow"
-                   }
-             }
-        ]
-},
-
-stitcherRoom:{
-    name:"Stitcher's Room",
-    description:"This location is locked.",
-    exits:["roof"]
-}
-};
-
-//==================================================
-
-let currentLocation = "shop";
-let currentSubLocation = null;
-
-//==================================================
-
-function log(message, css=""){
-    const div=document.createElement("div");
-    if(css) div.className=css;
-    div.innerHTML=message;
-    document.getElementById("log").prepend(div);
-}
-
-//==================================================
-
-function inventoryWeight(){
-    let total=0;
-    player.inventory.forEach(item=>{
-        total += items[item].weight;
-    });
-    return total;
-}
-
-//==================================================
-
-function addItem(itemId){
-    const item=items[itemId];
-
-    if(inventoryWeight()+item.weight > player.capacity){
-        log("Too heavy to carry.", "fail");
-        return;
-    }
-
-    player.inventory.push(itemId);
-    updateInventory();
-    log(`Added ${item.name}.`, "success");
-}
-
-//==================================================
-
-function updateInventory(){
-    let html="<h2>Inventory</h2>";
-    html+=`Weight: ${inventoryWeight()} / ${player.capacity}<br><br>`;
-
-    if(player.inventory.length===0){
-        html+="(empty)";
-    } else {
-        player.inventory.forEach(i=>{
-            html += `${items[i].name}<br>`;
-        });
-    }
-    if(document.querySelector("#takeSelected")){
-    openShoebox();
-}
-
-    document.getElementById("inventoryPanel").innerHTML=html;
-}
-
-//==================================================
-
-function updateCharacter(){
-    const s=player.stats;
-
-    document.getElementById("characterPanel").innerHTML=`
-        <h2>${player.name}</h2>
-        Pliage: ${s.pliage}<br>
-        Tether: ${s.tether}<br>
-        Heft: ${s.heft}<br>
-        Acumen: ${s.acumen}
-    `;
-}
-
-//==================================================
-
-function moveTo(roomId){
-    currentLocation=roomId;
-    currentSubLocation=null;
-    render();
-}
-
-//==================================================
-
-function enterLocation(locationId){
-    currentSubLocation=locationId;
-    render();
-}
-
-//==================================================
-
-function searchContext(){
-    let target;
-    if(currentSubLocation){
-        target =
-            rooms[currentLocation]
-            .locations[currentSubLocation];
-    } else {
-        target = rooms[currentLocation];
-    }
-    if(target.looted){
-        log("You've already searched here.");
-        return;
-    }
-    if(target.loot && target.loot.length > 0){
-
-        const itemId =
-            target.loot[
-                Math.floor(
-                    Math.random() *
-                    target.loot.length
-                )
-            ];
-        if(confirm(
-            `You found ${items[itemId].name}. Take it?`
-        )){
-            addItem(itemId);
-        }
-        target.looted = true;
-    } else {
-        log(
-            "You search around but find nothing."
-        );
-    }
-}
-
-//==================================================
-
-function doLocationAction(actionId){
-if(actionId === "leaveGift"){
-    const kept = [];
-    player.inventory.forEach(itemId => {
-        const item = items[itemId];
-        if(item.special){
-            kept.push(itemId);
-        } else {
-            storage.desk.push(itemId);
-        }
-    });
-
-    player.inventory = kept;
-    updateInventory();
-    log(
-        "You leave your belongings at the desk.",
-        "success"
-    )
-    return;
-}
-    if(actionId === "storeItem"){
-        openShoebox();
-        return;
-    }
-}
-//==========DICE====================================
-function rollChallenge(challengeId){
-
-    const room = rooms[currentLocation];
-    const challenge = room.challenges[challengeId];
-
-    let roll = Math.floor(Math.random() * 6) + 1;
-
-    if(challenge.skill){
-        roll += player.stats[challenge.skill] || 0;
-    }
-
-    if(roll >= challenge.dc){
-    log(
-        `Success! (${roll}/${challenge.dc})`,
-        "success"
-    );
-    if(!challenge.repeatable){
-        challengeState[challengeId] = {
-            completed:true
-        };
-    }
-
-    if(challenge.type === "travel"){
-        moveTo(challenge.destination);
-    } else {
-        render();
-    }
-} else {
-        log(
-            `Failure! (${roll}/${challenge.dc})`,
-            "fail"
-        );
-    }
-}
-//==================================================
-
-function render(){
-
-    const room = rooms[currentLocation];
-
-    let displayName = room.name;
-    let displayDescription = room.description;
-
-    if(currentSubLocation){
-        const loc = room.locations[currentSubLocation];
-        displayName = loc.name;
-        displayDescription = loc.description;
-    }
-
-    document.getElementById("locationName").textContent = displayName;
-    document.getElementById("locationDescription").textContent = displayDescription;
-
-    //==================================================
-    // ROOM BUTTONS 
-    //==================================================
-    const exits=document.getElementById("exitButtons");
-    exits.innerHTML="";
-
-(room.exits || []).forEach(exit=>{
-    let destination;
-    if(typeof exit === "string"){
-        destination = exit;
-    } else {
-
-        if(!isExitUnlocked(exit)){
-            return;
-        }
-        destination = exit.destination;
-    }
-    const btn=document.createElement("button");
-    btn.textContent =
-        rooms[destination].name;
-    btn.onclick =
-        ()=>moveTo(destination);
-    exits.appendChild(btn);
-});
-
-    //==================================================
-    // LOCATION BUTTONS
-    //==================================================
-    const locs=document.getElementById("locationButtons");
-    locs.innerHTML="";
-
-    if(!currentSubLocation){
-        Object.entries(room.locations || {}).forEach(([id, loc])=>{
-            const btn=document.createElement("button");
-            btn.textContent = loc.name;   // FIXED BUG HERE
-            btn.onclick = () => enterLocation(id);
-            locs.appendChild(btn);
-        });
-    }
-
-    //==================================================
-    // ACTION BUTTONS
-    //==================================================
-    const actions=document.getElementById("actionButtons");
-    actions.innerHTML="";
-
-    //SEARCH 
-    const searchBtn=document.createElement("button");
-    searchBtn.textContent="Search";
-    searchBtn.onclick=searchContext;
-    actions.appendChild(searchBtn);
-    
-    Object.entries(room.challenges || {}).forEach(([id, challenge])=>{
-    if(!isChallengeUnlocked(challenge)){
-        return;
-    }
-    if(
-        !challenge.repeatable &&
-        challengeState[id]?.completed
-    ){
-        return;
-    }
-    const btn=document.createElement("button");
-
-    btn.textContent =
-        `${challenge.label} {${challenge.skill} DC${challenge.dc}}`;
-
-    btn.onclick = ()=>rollChallenge(id);
-
-    actions.appendChild(btn);
-
-});
-
-    if(currentSubLocation){
-        const loc = room.locations[currentSubLocation];
-
-        (loc.actions || []).forEach(action=>{
-            const btn=document.createElement("button");
-            btn.textContent = action.label;
-            btn.onclick = () => doLocationAction(action.id);
-            actions.appendChild(btn);
-        });
-
-        const back=document.createElement("button");
-        back.textContent="Back";
-        back.onclick=()=>{ currentSubLocation=null; render(); };
-        actions.appendChild(back);
-    }
-}
-
-
-    //==================================================
-    // SHOEBOX
-    //==================================================
-
-function openShoebox(){
-    const box = storage.shoebox;
-
-    let html = "<h2>Shoebox Storage</h2>";
-
-    html += "<h3>Take Items</h3>";
-
-    if(box.length === 0){
-        html += "(empty)<br><br>";
-    } else {
-        box.forEach((itemId, index)=>{
-            html += `
-                <label>
-                    <input type="checkbox" data-type="take" data-index="${index}">
-                    ${items[itemId].name}
-                </label><br>
-            `;
-        });
-    }
-
-    html += `<br><button id="takeSelected">Take Selected</button>`;
-
-//========================================================
-
-    html += "<hr><h3>Deposit Items</h3>";
-
-    if(player.inventory.length === 0){
-        html += "(nothing to deposit)<br><br>";
-    } else {
-        player.inventory.forEach((itemId, index)=>{
-            html += `
-                <label>
-                    <input type="checkbox" data-type="deposit" data-index="${index}">
-                    ${items[itemId].name}
-                </label><br>
-            `;
-        });
-    }
-
-    html += `<br><button id="depositSelected">Deposit Selected</button>`;
-    html += `<button id="closeBox">Close</button>`;
-
-    document.getElementById("inventoryPanel").innerHTML = html;
-
-    document.getElementById("takeSelected").onclick = takeFromShoebox;
-    document.getElementById("depositSelected").onclick = depositToShoebox;
-    document.getElementById("closeBox").onclick = () => {
-        updateInventory();
-    };
-}
-//==================================================
-function depositToShoebox(){
-    const checkboxes = document.querySelectorAll("#inventoryPanel input[data-type='deposit']");
-
-    const toMove = [];
-
-    checkboxes.forEach(cb=>{
-        if(cb.checked){
-            toMove.push(parseInt(cb.dataset.index));
-        }
-    });
-
-    // sort descending so removal doesn't break indexes
-    toMove.sort((a,b)=>b-a);
-
-    for(const i of toMove){
-        const itemId = player.inventory[i];
-
-        storage.shoebox.push(itemId);
-        player.inventory.splice(i, 1);
-
-        log(`Stored ${items[itemId].name}.`, "success");
-    }
-
-    updateInventory();
-    openShoebox();
-}
-//===========================================================
-
-function takeFromShoebox(){
-    const checkboxes = document.querySelectorAll("#inventoryPanel input[data-type='take']");
-
-    const toTake = [];
-
-    checkboxes.forEach(cb=>{
-        if(cb.checked){
-            toTake.push(parseInt(cb.dataset.index));
-        }
-    });
-
-    // sort descending so splice doesn't break indexes
-    toTake.sort((a,b)=>b-a);
-
-    for(const i of toTake){
-        const itemId = storage.shoebox[i];
-
-        const item = items[itemId];
-        if(inventoryWeight() + item.weight <= player.capacity){
-            player.inventory.push(itemId);
-            storage.shoebox.splice(i, 1);
-            log(`Took ${item.name}.`, "success");
-        } else {
-            log(`${item.name} is too heavy to take.`, "fail");
-        }
-    }
-
-    updateInventory();
-    openShoebox();
-}
-
-//==================================================
-updateCharacter();
-updateInventory();
-render();
-log("You awake. You're on a metal table. Confused, you jump down to find yourself standing in the middle of a sort of shop. You don't have memories, you don't know anything yet, but some things just feel like instinct...");
+initializeGame();
 
 </script>
 
