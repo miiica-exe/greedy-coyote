@@ -5,7 +5,7 @@
 export const locations = {
 
     //==================================================
-    // ROOT
+    // 🌏ROOT (vague locations)
     //==================================================
 
     island:{
@@ -14,486 +14,147 @@ export const locations = {
         description:"A lonely island.",
 
         children:[
-            "woods"
+            "woods",
+            "coast",
+            "meadow",
+            "village",
+            "city",
+            "caves",
+            "peninsula",
+            "camp"
         ]
     },
-
+// 🌲===============WOODS===============
     woods:{
         id:"woods",
         label:"Woods",
-        description:"Tall trees surround the property.",
+        description:"Tall trees surround you.",
         parent:"island",
         backButton:false,
         children:[
-            "yard"
+            "westWood",
+            "northWood",
+            "heartWood"
         ]
     },
-
-    //==================================================
-    // YARD
-    //==================================================
+    
+    heartWood:{
+        id:"heartWood",
+        label:"Heart of the Woods",
+        description:"There is a lot of old forest growth here.",
+        parent:"woods",
+        backButton:false,
+        children:[
+            "yard",
+            "footPath",
+            "oldRoad"
+        ]
+    },
 
     yard:{
         id:"yard",
         label:"Yard",
-        description:
-            "An overgrown yard outside. The property is larger than you first thought.",
-        parent:"woods",
+        description:"An overgrown yard.",
+        parent:"heartWood",
         backButton:false,
         children:[
+            "house",
             "fountain",
             "garden",
-            "clover"
-        ],
-
-        connections:[
-            {
-                target:"hall"
-            },
-            {
-                target:"shop"
-            },
-            {
-                target:"kitchen"
-            }
-        ],
-
-        lootboxes:{
-            litter:{
-                label:"Scattered Litter",
-
-                type:"search",
-
-                inventory:[
-                    "smallBone"
-                ]
-            }
-        }
+            "burnPile"
+        ]
     },
 
-    fountain:{
-        id:"fountain",
-
-        label:"Overgrown Fountain",
-
-        description:
-            "A fountain consumed by weeds.",
-
+    house:{
+        id:"house",
+        label:"House",
+        description:"Tall trees surround you.",
         parent:"yard",
-
-        lootboxes:{
-            fountainLoot:{
-                label:"Fountain Debris",
-
-                type:"search",
-
-                inventory:[
-                    "smallBone"
-                ]
-            }
-        }
-    },
-
-    garden:{
-        id:"garden",
-
-        label:"Lost Garden",
-
-        description:
-            "A daffodil peeks through the overgrowth.",
-
-        parent:"yard"
-    },
-
-    clover:{
-        id:"clover",
-
-        label:"Clover Patch",
-
-        description:
-            "The air feels oddly cool here.",
-
-        parent:"yard"
-    },
-
-    //==================================================
-    // SHOP
-    //==================================================
-
-    shop:{
-        id:"shop",
-
-        label:"Shop",
-
-        description:
-            "The Stitcher's workshop. Something smells fishy.",
-
-        parent:"yard",
-
         children:[
-            "deskArea",
-            "shoeboxCorner",
-            "windowArea",
-            "bookshelves",
-            "operatingTable"
-        ],
-
-        connections:[
-            {
-                target:"hall"
-            },
-            {
-                target:"yard"
-            }
-        ],
-
-        lootboxes:{
-
-            deskBox:{
-                label:"Desk Locked Box",
-
-                type:"locked",
-
-                inventory:[]
-            },
-
-            shoebox:{
-                label:"Shoebox",
-
-                type:"safe",
-
-                inventory:[]
-            },
-
-            rubble:{
-                label:"Pile Of Rubble",
-
-                type:"search",
-
-                inventory:[
-                    "smallBone",
-                    "bigBone",
-                    "scrapBook"
-                ]
-            }
-        }
-    },
-
-    deskArea:{
-        id:"deskArea",
-
-        label:"Stitcher's Desk",
-
-        description:
-            "Covered in tools and scraps.",
-
-        parent:"shop"
-    },
-
-    shoeboxCorner:{
-        id:"shoeboxCorner",
-
-        label:"Shoebox Corner",
-
-        description:
-            "A forgotten shoebox rests in the corner.",
-
-        parent:"shop"
-    },
-
-    windowArea:{
-        id:"windowArea",
-
-        label:"Big Window",
-
-        description:
-            "Everything seems brighter here.",
-
-        parent:"shop"
-    },
-
-    bookshelves:{
-        id:"bookshelves",
-
-        label:"Bookshelves",
-
-        description:
-            "Tall shelves packed with books.",
-
-        parent:"shop",
-
-        lootboxes:{
-            shelfLoot:{
-                label:"Interesting Book",
-
-                type:"search",
-
-                inventory:[
-                    "scrapBook"
-                ]
-            }
-        }
-    },
-
-    operatingTable:{
-        id:"operatingTable",
-
-        label:"Operating Table",
-
-        description:
-            "This is where you woke up.",
-
-        parent:"shop"
-    },
-
-    //==================================================
-    // HOUSE
-    //==================================================
-
-    hall:{
-        id:"hall",
-
-        label:"Hall",
-
-        description:
-            "A large hall stretches through the center of the house.",
-
-        connections:[
-            {
-                target:"shop"
-            },
-            {
-                target:"yard"
-            },
-            {
-                target:"kitchen"
-            },
-            {
-                target:"foyer"
-            },
-            {
-                target:"stairs"
-            }
+            "hall",
+            "shop",
+            "kitchen",
+            "diningRoom",
+            "foyer",
+            "stairs",
+            "cellar",
+            "landing",
+            "balcony",
+            "roof",
+            "bedroom"
         ]
     },
-
-    foyer:{
-        id:"foyer",
-
-        label:"Foyer",
-
-        description:
-            "A cozy room with a dying fireplace.",
-
-        parent:"hall",
-
+// 🌱===============MEADOW===============
+    meadow:{
+        id:"meadow",
+        label:"Meadow",
+        description:"Your head barely peaks over the tall grass.",
+        parent:"island",
+        backButton:false,
         children:[
-            "fireplace",
-            "rug"
-        ],
-
-        connections:[
-            {
-                target:"hall"
-            },
-            {
-                target:"dining"
-            }
+            "spring",
+            "brook"
         ]
     },
-
-    fireplace:{
-        id:"fireplace",
-
-        label:"Fireplace",
-
-        description:
-            "The coals still radiate warmth.",
-
-        parent:"foyer"
-    },
-
-    rug:{
-        id:"rug",
-
-        label:"Plush Rug",
-
-        description:
-            "Very soft.",
-
-        parent:"foyer"
-    },
-
-    dining:{
-        id:"dining",
-
-        label:"Dining Room",
-
-        description:
-            "A table is set but nobody is here.",
-
-        connections:[
-            {
-                target:"foyer"
-            },
-            {
-                target:"kitchen"
-            }
-        ],
-
-        lootboxes:{
-            tableLoot:{
-                label:"Table Setting",
-
-                type:"search",
-
-                inventory:[
-                    "spoon"
-                ]
-            }
-        }
-    },
-
-    kitchen:{
-        id:"kitchen",
-
-        label:"Kitchen",
-
-        description:
-            "Fresh bread fills the air.",
-
-        connections:[
-            {
-                target:"hall"
-            },
-            {
-                target:"yard"
-            },
-            {
-                target:"dining"
-            }
+// 🛖===============VILLAGE===============
+    village:{
+        id:"village",
+        label:"The Village",
+        description:"a quaint village. you wonder who you could meet here.",
+        parent:"island",
+        backButton:false,
+        children:[
+            "vendors"
         ]
     },
-
-    //==================================================
-    // STAIRS
-    //==================================================
-
-    stairs:{
-        id:"stairs",
-
-        label:"Stairs",
-
-        description:
-            "Where would you like to go?",
-
-        connections:[
-            {
-                target:"hall"
-            },
-            {
-                target:"cellar"
-            },
-            {
-                target:"landing"
-            }
+// 🏙️===============CITY===============
+    city:{
+        id:"city",
+        label:"The City",
+        description:"You can hardly hear yourself think",
+        parent:"island",
+        backButton:false,
+        children:[
+            "downtown",
+            "suburbs"
         ]
     },
-
-    cellar:{
-        id:"cellar",
-
-        label:"Cellar",
-
-        description:
-            "It is too dark to see.",
-
-        connections:[
-            {
-                target:"stairs"
-            }
+// 🕳️===============CAVES===============
+    caves:{
+        id:"caves",
+        label:"Cave Entrance",
+        description:"The shadow you cast melts into the shadows of the cave before you.",
+        parent:"island",
+        backButton:false,
+        children:[
+            "descent"
         ]
     },
-
-    landing:{
-        id:"landing",
-
-        label:"Landing",
-
-        description:
-            "The upstairs landing.",
-
-        connections:[
-            {
-                target:"stairs"
-            },
-            {
-                target:"balcony"
-            }
+// 🌊===============PENINSULA===============
+    peninsula:{
+        id:"peninsula",
+        label:"The Peninsula",
+        description:"The view from here is so good that you almost wish there was something to see.",
+        parent:"island",
+        backButton:false,
+        children:[
+            "northPoint",
+            "quickSand"
         ]
     },
-
-    balcony:{
-        id:"balcony",
-
-        label:"Balcony",
-
-        description:
-            "A small balcony overlooking the yard.",
-
-        connections:[
-            {
-                target:"landing"
-            }
-        ],
-
-        challenges:[
-            "roofJump"
+// 🏖️===============COAST===============
+    coast:{
+        id:"coast",
+        label:"The Coast",
+        description:"Mmm, fishy.",
+        parent:"island",
+        backButton:false,
+        children:[
+            "northCoast",
+            "westCoast",
+            "southCoast",
+            "eastCoast"
         ]
     },
-
-    roof:{
-        id:"roof",
-
-        label:"Roof",
-
-        description:
-            "The wind whistles through the eaves.",
-
-        challenges:[
-            "openWindow"
-        ],
-
-        connections:[
-            {
-                target:"balcony"
-            },
-            {
-                target:"stitcherRoom",
-
-                conditions:[
-                    {
-                        type:"challenge",
-                        id:"openWindow"
-                    }
-                ]
-            }
-        ]
-    },
-
-    stitcherRoom:{
-        id:"stitcherRoom",
-
-        label:"Stitcher's Room",
-
-        description:
-            "This location is locked.",
-
-        connections:[
-            {
-                target:"roof"
-            }
-        ]
-    }
 };
 
