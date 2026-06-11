@@ -22,9 +22,8 @@ export const locations = {
         id:"woods",
         label:"Woods",
         description:"Tall trees surround the property.",
-
         parent:"island",
-
+        backButton:false,
         children:[
             "yard"
         ]
@@ -36,14 +35,11 @@ export const locations = {
 
     yard:{
         id:"yard",
-
         label:"Yard",
-
         description:
             "An overgrown yard outside. The property is larger than you first thought.",
-
         parent:"woods",
-
+        backButton:false,
         children:[
             "fountain",
             "garden",
