@@ -2,8 +2,8 @@
 // IMPORTS
 //==================================================
 
-import { locations } from "../world.js";
-import { items } from "../items.js";
+import { locations } from "./world.js";
+import { items } from "./items.js";
 
 //==================================================
 // GAME STATE
