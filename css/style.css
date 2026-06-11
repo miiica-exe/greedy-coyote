@@ -1,0 +1,197 @@
+/*==================================================
+GLOBAL
+==================================================*/
+
+body{
+    background:#473B1E;
+    color:#F2CD95;
+
+    font-family:Agency FB, sans-serif;
+
+    max-width:1000px;
+
+    margin:auto;
+    padding:20px;
+}
+
+h1,
+h2,
+h3{
+    margin-top:0;
+}
+
+button{
+    background:#949A64;
+
+    border:none;
+
+    padding:6px 10px;
+    margin:3px;
+
+    cursor:pointer;
+
+    font-family:inherit;
+}
+
+button:hover{
+    filter:brightness(1.1);
+}
+
+/*==================================================
+PANELS
+==================================================*/
+
+.panel{
+    background:#60592E;
+
+    border:1px solid #666;
+
+    padding:10px;
+
+    margin-bottom:10px;
+}
+
+/*==================================================
+LOCATION
+==================================================*/
+
+#locationLabel{
+    margin-bottom:10px;
+}
+
+#locationDescription{
+    line-height:1.4;
+}
+
+/*==================================================
+BUTTON CONTAINERS
+==================================================*/
+
+#childLocationButtons,
+#connectionButtons,
+#challengeButtons,
+#lootboxButtons{
+    display:flex;
+    flex-wrap:wrap;
+}
+
+/*==================================================
+LOOTBOX PANEL
+==================================================*/
+
+#lootboxPanel{
+    min-height:120px;
+}
+
+#lootboxContent label{
+    display:block;
+    margin-bottom:4px;
+}
+
+/*==================================================
+INVENTORY
+==================================================*/
+
+#inventoryPanel{
+    line-height:1.5;
+}
+
+.inventoryItem{
+    margin-bottom:3px;
+}
+
+.inventoryWeight{
+    margin-bottom:10px;
+    font-weight:bold;
+}
+
+/*==================================================
+CHARACTER
+==================================================*/
+
+#characterPanel{
+    line-height:1.5;
+}
+
+.statRow{
+    margin-bottom:3px;
+}
+
+.statModifier{
+    opacity:0.8;
+    font-size:0.9em;
+}
+
+/*==================================================
+WORLD STATE
+==================================================*/
+
+#worldStatePanel{
+    display:flex;
+    gap:20px;
+}
+
+/*==================================================
+LOG
+==================================================*/
+
+#log{
+    height:250px;
+
+    overflow-y:auto;
+
+    background:#111;
+
+    padding:10px;
+}
+
+.logEntry{
+    margin-bottom:4px;
+}
+
+.success{
+    color:lightgreen;
+}
+
+.fail{
+    color:#ff8888;
+}
+
+.info{
+    color:#87CEEB;
+}
+
+/*==================================================
+HIDDEN
+==================================================*/
+
+.hidden{
+    display:none !important;
+}
+
+/*==================================================
+MOBILE
+==================================================*/
+
+@media (max-width:700px){
+
+    body{
+        padding:10px;
+    }
+
+    button{
+        width:100%;
+        margin:2px 0;
+    }
+
+    #childLocationButtons,
+    #connectionButtons,
+    #challengeButtons,
+    #lootboxButtons{
+        display:block;
+    }
+
+    #worldStatePanel{
+        display:block;
+    }
+}
