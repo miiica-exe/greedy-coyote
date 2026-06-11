@@ -180,8 +180,7 @@ function getTimeModifier(stat){
 // CHAPTER MODIFIERS
 //==================================================
 
-function getChapterModifier(){
-
+function getChapterModifier(stat){
     return 0;
 }
 
@@ -281,6 +280,8 @@ export function moveTo(
 
     state.currentLocation =
         locationId;
+
+    activeLootbox = null;
 
     state.visitedLocations[
         locationId
@@ -649,9 +650,7 @@ function renderChallenges(){
             );
 
         button.textContent =
-            `${challenge.label}
-             (${challenge.stat}
-             DC${challenge.dc})`;
+    `${challenge.label} (${challenge.stat} DC${challenge.dc})`;
 
         button.onclick =
             ()=>runChallenge(id);
@@ -736,9 +735,9 @@ function renderLootboxPanel(){
         ];
 
     const box =
-        location.lootboxes[
-            activeLootbox
-        ];
+    location.lootboxes?.[
+        activeLootbox
+    ];
 
     if(!box){
 
@@ -1002,6 +1001,8 @@ function render(){
     renderChallenges();
 
     renderLootboxes();
+
+    renderLootboxPanel();
 
     renderInventory();
 }
