@@ -50,7 +50,7 @@ export const locations = {
             "oldRoad"
         ]
     },
-
+// ==============House===============
     yard:{
         id:"yard",
         label:"Yard",
@@ -76,12 +76,29 @@ export const locations = {
             "kitchen",
             "diningRoom",
             "foyer",
-            "stairs",
             "cellar",
             "landing",
             "balcony",
             "roof",
             "bedroom"
+        ]
+    },
+    hall:{
+        id:"hall",
+        label:"The Hall",
+        description:"A great hall runs through the center of the house.",
+        parent:"house",
+        children:[
+            "stairs"
+        ]
+    },
+    shop:{
+        id:"shop",
+        label:"Stitcher's Shop",
+        description:"Hmm, something smells... fishy?",
+        parent:"house",
+        children:[
+            "shopWindow",
         ]
     },
 // 🌱===============MEADOW===============
