@@ -3,13 +3,11 @@ GLOBAL
 ==================================================*/
 
 body{
-    background:#473B1E;
+    background:#473B1E url(https://static.vecteezy.com/system/resources/thumbnails/022/947/240/small/grunge-stripes-and-lines-texture-background-abstract-overlay-graphic-illustration-with-transparent-background-free-png.png) no-repeat center;
+    background-size: 100%;
     color:#F2CD95;
-
     font-family:Agency FB, sans-serif;
-
     max-width:1000px;
-
     margin:auto;
     padding:20px;
 }
@@ -22,14 +20,10 @@ h3{
 
 button{
     background:#949A64;
-
     border:none;
-
     padding:6px 10px;
     margin:3px;
-
     cursor:pointer;
-
     font-family:inherit;
 }
 
@@ -43,11 +37,8 @@ PANELS
 
 .panel{
     background:#60592E;
-
     border:1px solid #666;
-
     padding:10px;
-
     margin-bottom:10px;
 }
 
@@ -137,11 +128,8 @@ LOG
 
 #log{
     height:250px;
-
     overflow-y:auto;
-
     background:#111;
-
     padding:10px;
 }
 
