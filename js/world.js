@@ -65,17 +65,17 @@ export const locations = {
         ]
     },
 
-    house:{
-        id:"house",
-        label:"House",
-        description:"Tall trees surround you.",
+    hall:{
+        id:"hall",
+        label:"Hall",
+        description:"A great hall runs through the center of the house.",
         parent:"yard",
         children:[
-            "hall",
             "shop",
             "kitchen",
-            "diningRoom",
+            "dining",
             "foyer",
+            "stairs",
             "cellar",
             "landing",
             "balcony",
@@ -83,21 +83,12 @@ export const locations = {
             "bedroom"
         ]
     },
-    hall:{
-        id:"hall",
-        label:"The Hall",
-        description:"A great hall runs through the center of the house.",
-        parent:"house",
-        children:[
-            "stairs"
-        ]
-    },
     
     shop:{
         id:"shop",
         label:"Stitcher's Shop",
         description:"Hmm, something smells... fishy?",
-        parent:"house",
+        parent:"hall",
         backButton:true,
         children:[
             "shopWindow",
@@ -108,13 +99,52 @@ export const locations = {
         id:"kitchen",
         label:"Kitchen",
         description:"Mmm, bread.",
-        parent:"house",
+        parent:"hall",
+        backButton:true,
+        children:[
+            "kitchenTable",
+        ]
+    },
+
+        dining:{
+        id:"dining",
+        label:"Dining Room",
+        description:"It's dark in here.",
+        parent:"hall",
+        children:[
+            "diningTable",
+        ]
+    },
+
+        foyer:{
+        id:"foyer",
+        label:"Foyer",
+        description:"A fire wanes in the fireplace. Someone should Stoke it.",
+        parent:"hall",
+        backButton:true,
+        children:[
+            "fireplace",
+        ]
+    },
+
+        cellar:{
+        id:"cellar",
+        label:"Cellar",
+        description:"Woah! It is seriously dark down here.",
+        parent:"hall",
+        backButton:true,
+    },
+
+        stairs:{
+        id:"stairs",
+        label:"Stairwell",
+        description:"Up or Down?",
+        parent:"hall",
         backButton:true,
         children:[
             "shopWindow",
         ]
     },
-    
 // 🌱===============MEADOW===============
     meadow:{
         id:"meadow",
