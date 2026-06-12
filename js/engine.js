@@ -125,8 +125,6 @@ export function initializeGame(){
         state.currentLocation
     ] = true;
 
-    render();
-
     log(
         "You awake. You're on a metal table."
     );
@@ -476,14 +474,14 @@ function renderLocation(){
     document
         .getElementById(
             "locationLabel"
-        )
+        ),
         .textContent =
         location.label;
 
     document
         .getElementById(
             "locationDescription"
-        )
+        ),
         .textContent =
         location.description
         || "";
