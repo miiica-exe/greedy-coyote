@@ -92,15 +92,29 @@ export const locations = {
             "stairs"
         ]
     },
+    
     shop:{
         id:"shop",
         label:"Stitcher's Shop",
         description:"Hmm, something smells... fishy?",
         parent:"house",
+        backButton:true,
         children:[
             "shopWindow",
         ]
     },
+
+        kitchen:{
+        id:"kitchen",
+        label:"Kitchen",
+        description:"Mmm, bread.",
+        parent:"house",
+        backButton:true,
+        children:[
+            "shopWindow",
+        ]
+    },
+    
 // 🌱===============MEADOW===============
     meadow:{
         id:"meadow",
