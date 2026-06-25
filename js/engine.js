@@ -11,7 +11,7 @@ import { items } from "./items.js";
 
 export const state = {
 
-    currentLocation:"shop",
+    currentLocation:"table",
 
     chapter:0,
 
