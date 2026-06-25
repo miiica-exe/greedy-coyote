@@ -50,6 +50,22 @@ export const locations = {
             "oldRoad"
         ]
     },
+
+    northWood:{
+        id:"northWood",
+        label:"Nothern Forest",
+        description:"There are a few pine trees among the oaks here.",
+        parent:"woods",
+        backButton:false,
+    },
+
+    westWood:{
+        id:"westWood",
+        label:"Western Woods",
+        description:"The forest is less dense here.",
+        parent:"woods",
+        backButton:false
+    },
 // ==============House===============
     yard:{
         id:"yard",
@@ -62,28 +78,44 @@ export const locations = {
             "fountain",
             "garden",
             "burnPile"
-        ]
+        ],
+        connections:[
+            {
+            target:"shop",
+            },
+            ],
+    },
+
+    house:{
+        id:"house",
+        label:"Entryway",
+        description:"You enter the front of the house.",
+        parent:"yard",
+        backButton:false,
+        children:[
+            "hall"
+            ],
     },
 
     hall:{
         id:"hall",
         label:"Hall",
         description:"A great hall runs through the center of the house.",
-        parent:"yard",
+        parent:"house",
         children:[
             "shop",
             "kitchen",
             "dining",
             "foyer",
-            "stairs",
-            "cellar",
-            "landing",
-            "balcony",
-            "roof",
-            "bedroom"
-        ]
+            "stairs"
+        ],
+        connections:[
+            {
+            target:"shop",
+            },
+            ],
     },
-    
+//======
     shop:{
         id:"shop",
         label:"Stitcher's Shop",
@@ -92,58 +124,124 @@ export const locations = {
         backButton:true,
         children:[
             "shopWindow",
-        ]
+        ],
+        connections:[
+            {
+            target:"shopWindow",
+            },
+            {
+            target:"yard",
+            },
+            {
+            target:"hall",
+            },
+            ],
     },
-
-        kitchen:{
+    shopWindow:{
+        id:"shopWindow",
+        label:"Big Window",
+        description:"You have to crane your neck to look through it into the yard.",
+        parent:"shop"
+    },
+//======
+    kitchen:{
         id:"kitchen",
         label:"Kitchen",
-        description:"Mmm, bread.",
+        description:"Mmm, you smell fresh bread.",
         parent:"hall",
-        backButton:true,
         children:[
             "kitchenTable",
         ]
     },
-
-        dining:{
+    kitchenTable:{
+        id:"kitchenTable",
+        label:"Tiny Table",
+        description:"You sit at the single, tiny table on a matching tiny chair. It fits perfectly. You wonder when dinner will be ready.",
+        parent:"kitchen"
+    },
+//======
+    dining:{
         id:"dining",
         label:"Dining Room",
         description:"It's dark in here.",
         parent:"hall",
+            backButton:false,
         children:[
             "diningTable",
         ]
     },
-
-        foyer:{
+    diningTable:{
+        id:"diningTable",
+        label:"Big Dining Room Table",
+        description:"The table is set, but all that you can see on the plates is dust and cobwebs.",
+        parent:"dining"
+    },
+//======
+    foyer:{
         id:"foyer",
         label:"Foyer",
-        description:"A fire wanes in the fireplace. Someone should Stoke it.",
+        description:"There is a fireplace and comfy seating in here.",
         parent:"hall",
-        backButton:true,
         children:[
-            "fireplace",
+            "firePlace",
         ]
     },
-
-        cellar:{
-        id:"cellar",
-        label:"Cellar",
-        description:"Woah! It is seriously dark down here.",
-        parent:"hall",
-        backButton:true,
+    firePlace:{
+        id:"firePlace",
+        label:"Fireplace",
+        description:"The coals still radiate heat, someone should stoke it.",
+        parent:"foyer",
     },
-
-        stairs:{
+//======
+    stairs:{
         id:"stairs",
         label:"Stairwell",
         description:"Up or Down?",
         parent:"hall",
-        backButton:true,
         children:[
-            "shopWindow",
+            "cellar",
+            "landing"
         ]
+    },
+    
+    cellar:{
+        id:"cellar",
+        label:"Cellar",
+        description:"Woah! It is seriously dark down here.",
+        parent:"stairs"
+    },
+//======
+    landing:{
+        id:"landing",
+        label:"Second Floor Landing",
+        description:"At the top of the stairs, you see a balcony to the left, and Stitcher's door to the right. There's a sofa against the far wall, and a painting on the wall above it. You wonder what it depicts, then you wonder what wondering is. Maybe that's what it's all about.",
+        parent:"stairs",
+        children:[
+            "balcony",
+            "office",
+            "roof"
+            ]
+    },
+
+    balcony:{
+        id:"balcony",
+        label:"Balcony",
+        description:"This balcony overlooks the back yard. There are trees as far as the eye can see. There are white railings on all sides, and potentiall access to the roof if you can squeeze through...",
+        parent:"landing"
+    },
+
+    office:{
+        id:"office",
+        label:"Stitcher's Office",
+        description:"Nothing available yet...",
+        parent:"landing"
+    },
+
+    roof:{
+        id:"roof",
+        label:"Rooftop",
+        description:"The wind is making a gentle noise in the eaves. You can see that there is a window slightly ajar up here. Maybe you could go through it.",
+        parent:"landing"
     },
 // 🌱===============MEADOW===============
     meadow:{
@@ -157,6 +255,18 @@ export const locations = {
             "brook"
         ]
     },
+    spring:{
+        id:"spring",
+        label:"Mossy Spring",
+        description:"Clear water is bubbling up from some moss-covered rocks. Take a drink?",
+        parent:"meadow",
+    },
+    brook:{
+        id:"brook",
+        label:"Babbling Brook",
+        description:"The water makes an interesting babbling, bubbling sound as it rolls over stones. You wonder if you could roll like that too.",
+        parent:"meadow",
+    },
 // 🛖===============VILLAGE===============
     village:{
         id:"village",
@@ -167,6 +277,12 @@ export const locations = {
         children:[
             "vendors"
         ]
+    },
+    vendors:{
+        id:"vendors",
+        label:"Vendor's Row",
+        description:"There are several different shops on this street, who do you want to visit?",
+        parent:"village",
     },
 // 🏙️===============CITY===============
     city:{
@@ -180,16 +296,34 @@ export const locations = {
             "suburbs"
         ]
     },
+    downtown:{
+        id:"downtown",
+        label:"Downtown",
+        description:"Wow! You didn't know there were so many people in the world. You can't tell where you're going most of the time.",
+        parent:"city"
+    },
+    suburbs:{
+        id:"suburbs",
+        label:"Suburbs",
+        description:"So many mansions! But why do they all look the same?",
+        parent:"city"
+    },
 // 🕳️===============CAVES===============
     caves:{
         id:"caves",
         label:"Cave Entrance",
-        description:"The shadow you cast melts into the shadows of the cave before you.",
+        description:"Your shadow soon becomes indecipherable from the shadows of the cave before you.",
         parent:"island",
         backButton:false,
         children:[
             "descent"
         ]
+    },
+    descent:{
+        id:"descent",
+        label:"Cave Descent",
+        description:"The ground becomes cold and sandy as it slopes into the depths. You should have a flashlight to continue.",
+        parent:"caves"
     },
 // 🌊===============PENINSULA===============
     peninsula:{
@@ -202,6 +336,18 @@ export const locations = {
             "northPoint",
             "quickSand"
         ]
+    },
+    northPoint:{
+        id:"northPoint",
+        label:"North Point",
+        description:"There is cold, grey water on three sizes, you feel strangely free.",
+        parent:"peninsula",
+    },
+    quickSand:{
+        id:"quickSand",
+        label:"Quicksand!",
+        description:"Oh no, the ground seems to want to suck you in, better be careful where you step.",
+        parent:"peninsula",
     },
 // 🏖️===============COAST===============
     coast:{
@@ -216,6 +362,30 @@ export const locations = {
             "southCoast",
             "eastCoast"
         ]
+    },
+    northCoast:{
+        id:"northCoast",
+        label:"Northern shores",
+        description:"The wind blows cold from the sea.",
+        parent:"coast",
+    },
+    westCoast:{
+        id:"westCoast",
+        label:"Western Water's Edge",
+        description:"There are many large boulders, navigating here seems tricky.",
+        parent:"coast",
+    },
+    southCoast:{
+        id:"southCoast",
+        label:"Southern Shores",
+        description:"It's very swampy here. The cattails create a small green forest around you.",
+        parent:"coast",
+    },
+    eastCoast:{
+        id:"eastCoast",
+        label:"East Coast",
+        description:"There are glassy pebbles along the beaches! Maybe you should take a few.",
+        parent:"coast",
     },
 };
 
