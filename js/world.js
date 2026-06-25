@@ -83,6 +83,9 @@ export const locations = {
             {
             target:"shop",
             },
+            {
+            target:"kitchen",
+            },
             ],
     },
 
@@ -91,7 +94,6 @@ export const locations = {
         label:"Entryway",
         description:"You enter the front of the house.",
         parent:"yard",
-        backButton:false,
         children:[
             "hall"
             ],
@@ -100,12 +102,11 @@ export const locations = {
     hall:{
         id:"hall",
         label:"Hall",
-        description:"A great hall runs through the center of the house.",
+        description:"A great hall runs through the center of the house.\n There is a fur rug running the length of the wooden floor, and a great chandelier hangs overhead, unlit.",
         parent:"house",
         children:[
             "shop",
             "kitchen",
-            "dining",
             "foyer",
             "stairs"
         ],
@@ -116,10 +117,14 @@ export const locations = {
         label:"Stitcher's Shop",
         description:"Hmm, something smells... fishy?",
         parent:"hall",
-        backButton:true,
+        backButton:false,
         children:[
             "shopWindow",
-        ],
+            "desk",
+            "study",
+            "bookshelf",
+            "table",
+            ],
         connections:[
             {
             target:"yard",
@@ -132,8 +137,37 @@ export const locations = {
     shopWindow:{
         id:"shopWindow",
         label:"Big Window",
-        description:"You have to crane your neck to look through it into the yard.",
+        description:"You have to crane your neck to look through the window.",
         parent:"shop"
+    },
+    desk:{
+        id:"desk",
+        label:"Stitcher's workbench",
+        description:"There are a lot of tools and scraps here.",
+        parent:"shop",
+        lockedBox:{
+            label:"Component Bin",
+            type:"locked",
+            inventory:[]
+            },
+    },
+    study:{
+        id:"study",
+        label:"Writing Desk",
+        description:"There is a small writing desk and chair by the big window.",
+        parent:"shop",
+    },
+    bookshelf:{
+        id:"bookshelf",
+        label:"Bookshelves",
+        description:"Two tall booksheles stand perpendicular to the wall. So much knowledge leaves you in awe.",
+        parent:"shop",
+    },
+    table:{
+        id:"table",
+        label:"Metal Table",
+        description:"A cold, shiny metal table. There are a few tools lying about, some look recently cleaned.",
+        parent:"shop",
     },
 //======
     kitchen:{
@@ -143,6 +177,7 @@ export const locations = {
         parent:"hall",
         children:[
             "kitchenTable",
+            "dining",
         ]
     },
     kitchenTable:{
@@ -151,16 +186,22 @@ export const locations = {
         description:"You sit at the single, tiny table on a matching tiny chair. It fits perfectly. You wonder when dinner will be ready.",
         parent:"kitchen"
     },
-//======
     dining:{
         id:"dining",
         label:"Dining Room",
         description:"It's dark in here.",
-        parent:"hall",
-            backButton:false,
+        parent:"kitchen",
+        backButton:false,
         children:[
             "diningTable",
-        ]
+        ],
+        connections:[
+            {
+            target:"foyer",
+            },
+            {
+            target:"kitchen",
+            },
     },
     diningTable:{
         id:"diningTable",
