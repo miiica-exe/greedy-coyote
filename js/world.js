@@ -109,11 +109,6 @@ export const locations = {
             "foyer",
             "stairs"
         ],
-        connections:[
-            {
-            target:"shop",
-            },
-            ],
     },
 //======
     shop:{
@@ -126,9 +121,6 @@ export const locations = {
             "shopWindow",
         ],
         connections:[
-            {
-            target:"shopWindow",
-            },
             {
             target:"yard",
             },
