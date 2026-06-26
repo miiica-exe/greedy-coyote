@@ -127,7 +127,7 @@ LOG
 ==================================================*/
 
 #log{
-    height:180px;
+    height:125px;
     overflow-y:auto;
     background:#111;
     padding:10px;
