@@ -11,7 +11,7 @@ import { items } from "./items.js";
 
 export const state = {
 
-    currentLocation:"table",
+    currentLocation:"shop",
 
     chapter:0,
 
@@ -128,7 +128,7 @@ export function initializeGame(){
  render();
     
     log(
-        "You awake. You're on a metal table."
+        "You awaken on a cold, metal table. Jumping down, you look around."
     );
 }
 
