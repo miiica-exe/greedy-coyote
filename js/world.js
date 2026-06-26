@@ -12,7 +12,6 @@ export const locations = {
         id:"island",
         label:"Island",
         description:"A lonely island.",
-
         children:[
             "woods",
             "coast",
@@ -49,6 +48,21 @@ export const locations = {
             "footPath",
             "oldRoad"
         ]
+    },
+
+    footPath:{
+        id:"footPath",
+        label:"Worn footpath",
+        description:"Some parts of the trail are so overgrown that you have to backtrack to find it again.",
+        parent:"heartWood"
+    },
+
+    oldRoad:{
+        id:"oldRoad",
+        label:"Old Road",
+        description:"A worn paved road lies ahead. Ferns grow through the cracks in some places.",
+        parent:"heartWood",
+        backButton:false,
     },
 
     northWood:{
@@ -202,6 +216,7 @@ export const locations = {
             {
             target:"kitchen",
             },
+            ],
     },
     diningTable:{
         id:"diningTable",
