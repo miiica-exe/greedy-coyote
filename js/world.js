@@ -154,7 +154,7 @@ export const locations = {
             target:"stairs"
             },
             {
-            target:"balcony",
+            target:"balcony"
             },
             ],
     },
