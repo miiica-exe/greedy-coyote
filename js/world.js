@@ -8,6 +8,17 @@ export const locations = {
         id:"yard",
         label:"Overgrown Yard",
         description:"There is a small yard surrounding the mansion. There is a worn fence peeking up through the overgrowth, and you can tell it used to be painted white.",
+        connections:[
+            {
+            target:"veranda"
+            },
+            {
+            target:"shop"
+            },
+            {
+            target:"kitchen"
+            },
+            ],
     },
 
     veranda:{
@@ -95,7 +106,7 @@ export const locations = {
         description:"smells like bread",
         connections:[
             {
-            target:"foyer"
+            target:"dining"
             },
             {
             target:"hall"
